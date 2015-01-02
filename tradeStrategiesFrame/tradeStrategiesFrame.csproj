@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7E5B084A-8505-4922-AC80-CB3820138C5B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>tradeStrategiesFrame</RootNamespace>
+    <AssemblyName>tradeStrategiesFrame</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApproximationConstructors\ApproximationConstructor.cs" />
+    <Compile Include="DecisionMakingStrategies\ApproximationDecisionStrategy.cs" />
+    <Compile Include="Model\ArrayCount.cs" />
+    <Compile Include="AveragingConstructors\AveragingConstructor.cs" />
+    <Compile Include="DecisionMakingStrategies\DecisionStrategy.cs" />
+    <Compile Include="Factories\DecisionStrategieFactory.cs" />
+    <Compile Include="DecisionMakingStrategies\DeviationDecisionStrategy.cs" />
+    <Compile Include="Factories\ApproximationConstructorFactory.cs" />
+    <Compile Include="Factories\AveragingConstructorFactory.cs" />
+    <Compile Include="Factories\SiftValuesStrategieFactory.cs" />
+    <Compile Include="Factories\TakeProfitStrategieFactory.cs" />
+    <Compile Include="DecisionMakingStrategies\FixApproximationDecisionStrategy.cs" />
+    <Compile Include="DecisionMakingStrategies\FixDeviationDecisionStrategy.cs" />
+    <Compile Include="ApproximationConstructors\LinearApproximationConstructor.cs" />
+    <Compile Include="MathLab\alglibinternal.cs" />
+    <Compile Include="MathLab\alglibmisc.cs" />
+    <Compile Include="MathLab\ap.cs" />
+    <Compile Include="MathLab\dataanalysis.cs" />
+    <Compile Include="MathLab\diffequations.cs" />
+    <Compile Include="MathLab\fasttransforms.cs" />
+    <Compile Include="MathLab\integration.cs" />
+    <Compile Include="MathLab\interpolation.cs" />
+    <Compile Include="MathLab\linalg.cs" />
+    <Compile Include="MathLab\optimization.cs" />
+    <Compile Include="MathLab\solvers.cs" />
+    <Compile Include="MathLab\specialfunctions.cs" />
+    <Compile Include="MathLab\statistics.cs" />
+    <Compile Include="SiftValuesStrategies\MinMaxSiftValuesStrategy.cs" />
+    <Compile Include="Model\Approximation.cs" />
+    <Compile Include="Model\Candle.cs" />
+    <Compile Include="Model\Description.cs" />
+    <Compile Include="Model\Deviation.cs" />
+    <Compile Include="Model\GPortfolio.cs" />
+    <Compile Include="Model\IValue.cs" />
+    <Compile Include="Model\Portfolio.cs" />
+    <Compile Include="Model\Stock.cs" />
+    <Compile Include="Model\Trade.cs" />
+    <Compile Include="SiftValuesStrategies\NoSiftValuesStrategy.cs" />
+    <Compile Include="TakeProfitStrategies\NoTakeProfitStrategy.cs" />
+    <Compile Include="AveragingConstructors\SEMAAveragingConstructor.cs" />
+    <Compile Include="SiftValuesStrategies\SiftValuesStrategy.cs" />
+    <Compile Include="SiftValuesStrategies\SimpleSiftValuesStrategy.cs" />
+    <Compile Include="TakeProfitStrategies\TakeProfitFromMaxStrategy.cs" />
+    <Compile Include="TakeProfitStrategies\TakeProfitStrategy.cs" />
+    <Compile Include="Model\TradeSignal.cs" />
+    <Compile Include="AveragingConstructors\TwoDepthAveragingConstructor.cs" />
+    <Compile Include="TradeStrategiesFrame.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
