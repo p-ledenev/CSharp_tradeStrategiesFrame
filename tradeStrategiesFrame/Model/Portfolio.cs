@@ -2,248 +2,209 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using tradeStrategiesFrame.DecisionMakingStrategies;
+using System.Reflection;
 using tradeStrategiesFrame.Factories;
+using tradeStrategiesFrame.SiftValuesStrategies;
 
 namespace tradeStrategiesFrame.Model
 {
     class Portfolio
     {
-        public double moneyValue { get; set; }
-        public double moneyMax { get; set; }
+        public String ticket { get; set; }
+        public double comission { get; set; }
+        public double historyParam { get; set; }
+        public Candle[] candles { get; set; }
+        public Machine[] machines { get; set; }
+        public List<Slice> averageMoney { get; set; }
 
-        public bool isTrade { get; set; }
-        public Stock heap { get; set; }
+        public String suffix { get; set; }
 
-        public List<Trade> trades { get; set; }
-
-        public DecisionStrategy strategie { get; set; }
-
-        public int minDepth { get; set; }
-        public int aver { get; set; }
-        public double topR2 { get; set; }
-
-        public GPortfolio parent { get; set; }
-
-        public Portfolio(double moneyValue, int aver, int minDepth, double topR2, GPortfolio parent)
+        public Portfolio(String suffix)
         {
+            averageMoney = new List<Slice>();
 
-            this.moneyValue = moneyValue;
-            this.moneyMax = moneyValue;
-            this.aver = aver;
-
-            this.minDepth = minDepth;
-            this.topR2 = topR2;
-
-            isTrade = true;
-            this.parent = parent;
-
-            heap = new Stock();
-            trades = new List<Trade>();
-
-            strategie = DecisionStrategieFactory.createDecisionStrategie(this);
-            strategie.readParamsFrom(null);
+            this.suffix = suffix;
         }
 
-        public Trade getLastTrade()
+        public void initPortfolios(List<Candle> candles, String ticket, double comission, double historyParam, int[] arrAver, double[] arrTopR2)
         {
-            if (trades == null || trades.Count() <= 0)
-                return new Trade(new DateTime(), 0, 0, 0, Stock.none, Trade.closePos, 0);
+            this.ticket = ticket;
+            this.comission = comission;
+            this.historyParam = historyParam;
 
-            return trades.Last();
+            sift(candles);
+
+            int machineAmount = arrAver.Length * arrTopR2.Length;
+            machines = new Machine[machineAmount];
+
+            for (int i = 0; i < arrTopR2.Length; i++)
+            {
+                for (int j = 0; j < arrAver.Length; j++)
+                {
+                    Machine pft = new Machine(10000000, 500, arrAver[j], arrTopR2[i], this);
+                    machines[i * arrAver.Length + j] = pft;
+                }
+            }
         }
 
-        public double getRearValue(int start)
+        public void trade(String year)
         {
-            return parent.siftedValues[start].nonGapValue;
+            for (int i = 0; i < candles.Length - 2; i++)
+            {
+                Candle candle = candles[i];
+
+                if (ArrayCount.countGap(candles, i) != 0)
+                {
+                    addAverageMoneyValue(candle.date, candle.dateIndex);
+                    flushResults(year);
+                }
+
+                bool onlyCalculate = (candle.date.Year.ToString() != year);
+
+                foreach (Machine pft in machines)
+                    pft.trade(i, onlyCalculate);
+            }
+
+            flushResults(year);
         }
 
-        public Trade getLastOpenPositionTrade()
+        protected void flushResults(String year)
         {
-            if (trades == null)
-                return new Trade(new DateTime(), 0, 0, 0, Stock.none, Trade.closePos, 0);
+            if (machines.Length > 1)
+            {
+                writeProtfoliosMoneys(year);
+                writeAverageMoneyValue(year);
+            }
+            else
+            {
+                writePortfolioValues(year);
+            }
 
-            for (int i = trades.Count - 1; i >= 0; i--)
-                if (Trade.openPos.Equals(trades[i].position))
-                    return trades[i];
-
-            return new Trade(new DateTime(), 0, 0, 0, Stock.none, Trade.closePos, 0);
+            writePortfoliosResume(year);
         }
 
-        public double countStock(double value)
+        public void addAverageMoneyValue(DateTime dt, int index)
         {
-            int sgn = 0;
-            if (heap.mode == Stock.buy) sgn = 1;
-            if (heap.mode == Stock.sell) sgn = -1;
+            double averageValue = machines.Sum(machine => machine.countStock());
+            double value = Math.Round(averageValue / machines.Length / 100000, 2);
 
-            return moneyValue + sgn * value * heap.volume;
+            Slice slice = new Slice(dt, index, value);
+
+            if (averageMoney.Count <= 0 || !slice.hasEqualDate(averageMoney.Last()))
+                averageMoney.Add(slice);
         }
 
-        public double countStock()
+        public void writeAverageMoneyValue(String year)
         {
-            int sgn = 0;
-            if (heap.mode == Stock.buy) sgn = 1;
-            if (heap.mode == Stock.sell) sgn = -1;
+            List<String> collection = averageMoney.Select(slice => slice.print()).ToList();
 
-            return moneyValue + sgn * heap.buyValue * heap.volume;
+            File.WriteAllLines("averageMoneys_" + ticket + "_" + year + "_" + suffix + ".txt", collection);
         }
 
-        protected double calculateOpenComission(Candle candle, int volume)
+        public void writeProtfoliosMoneys(String year)
         {
-            return 2 * volume * parent.comissionValue;
+            List<String> collection = new List<String>();
+
+            String str = "";
+            foreach (Machine pft in machines)
+            {
+                str += "depth_" + pft.minDepth + " topR2_" + pft.topR2 + "|date|money| |";
+            }
+            collection.Add(str);
+
+            int count = getPortfoliosTradesCount();
+            for (int j = 0; j < count; j++)
+            {
+                str = "";
+                foreach (Machine machine in machines)
+                {
+                    if (j < machine.trades.Count)
+                        str += machine.trades.ElementAt(j).resumeString() + "| |";
+                    else
+                        str += " | | | |";
+                }
+
+                collection.Add(str);
+            }
+
+            File.WriteAllLines("pftsMoneys_" + ticket + "_" + year + "_" + suffix + ".txt", collection);
         }
 
-        protected double calculateCloseComission(Candle candle, int volume)
+        public void writePortfoliosResume(String year)
         {
-            if (getLastTrade().inTradeDay(candle.dt))
-                return 0;
+            List<String> collection = new List<String>();
 
-            return 2 * volume * parent.comissionValue;
+            collection.Add(createResumeStringFor(" ", "getAver"));
+            collection.Add(createResumeStringFor("maxLoss", "calculateMaxLoss"));
+            collection.Add(createResumeStringFor("maxMoney", "calculateMaxMoneyValue"));
+            collection.Add(createResumeStringFor("endPeriodMoney", "calculateEndPeriodMoneyValue"));
+
+            File.WriteAllLines("pftsResume_" + ticket + "_" + year + "_" + suffix + ".txt", collection);
         }
 
-        private void closeStock(Candle candle)
+        protected String createResumeStringFor(String title, string methodName)
         {
-            if (heap.volume <= 0 || heap.buyValue <= 0 || heap.mode == Stock.none) return;
+            String str = title + "|";
 
-            int sgn = (heap.mode == Stock.buy) ? -1 : 1;
+            MethodInfo methodInfo;
+            foreach (Machine pft in machines)
+            {
+                methodInfo = pft.GetType().GetMethod(methodName);
+                str += methodInfo.Invoke(pft, null) + "|";
+            }
 
-            moneyValue = moneyValue - sgn * heap.volume * candle.nextValue - calculateCloseComission(candle, heap.volume);
-            heap.clearStock();
-        }
+            str += "|";
 
-        private void openStock(Candle candle, String mode)
-        {
-            if (heap.volume > 0 || heap.buyValue > 0 || heap.mode != Stock.none) return;
+            methodInfo = GetType().GetMethod(methodName);
+            str += methodInfo.Invoke(this, null) + "|";
 
-            int sgn = (mode == Stock.buy) ? 1 : -1;
-            int volume = (int)Math.Floor(moneyValue / candle.nextValue);
-
-            moneyValue = moneyValue - sgn * volume * candle.nextValue - calculateOpenComission(candle, volume);
-            heap.setStock(candle.dt, candle.index, candle.nextValue, mode, volume);
-        }
-
-        public void operateStock(String cross, String position, int start)
-        {
-            if (heap.mode == cross || cross == Stock.none) return;
-
-            if (heap.mode == Stock.none && position == Trade.closePos) return;
-
-            Candle cn = parent.siftedValues[start];
-
-            int vlm = heap.volume;
-            closeStock(cn);
-
-            if (position == Trade.openPos)
-                openStock(cn, cross);
-
-            Trade trade = new Trade(cn.dt, cn.timeOrder, cn.nextValue, countStock(), cross, position, vlm + heap.volume);
-            trades.Add(trade);
-
-            parent.addAverageMoneyValue(cn.dt, cn.timeOrder);
-        }
-
-        public void operateClose(int start)
-        {
-            if (heap.mode == Stock.none) return;
-
-            String cross = (heap.mode == Stock.buy) ? Stock.sell : Stock.buy;
-
-            operateStock(cross, Trade.closePos, start);
-        }
-
-        public void trade(int start, bool onlyCalculate)
-        {
-            TradeSignal signal = strategie.tradeSignalFor(start);
-
-            if (!onlyCalculate)
-                operateStock(signal.cross, signal.position, start);
-
-            if (ArrayCount.isDayChanged(parent.siftedValues, start))
-                Console.WriteLine(parent.ticket + ": minDepth: " + minDepth + "; topR2: " + topR2 + "; " +
-                    parent.siftedValues[start].printDescription() + " " + parent.siftedValues[start].dt + " " + DateTime.Now);
-        }
-
-        public void printPortfolio(String fName)
-        {
-            String str = parent.ticket + ":\n moneyValue: " + moneyValue;
-            Console.WriteLine(str);
-
-            if (fName != null)
-                File.AppendAllText(fName, str);
-
-            heap.printStock(fName);
+            return str;
         }
 
         public void writePortfolioValues(String year)
         {
-            List<String> collection = new List<String>();
-            collection.Add("index|date|siftedValue|nonGap|" + Candle.printDescriptionHead() +
-                           " |index|date|openBuy|openSell|closeBuy|closeSell|money");
+            foreach (Machine pft in machines)
+                pft.writePortfolioValues(year);
+        }
 
-            Trade[] arrTrades = trades.ToArray();
+        private int getPortfoliosTradesCount()
+        {
+            int count = 0;
+            foreach (Machine pft in machines)
+                if (pft.trades.Count > count)
+                    count = pft.trades.Count;
 
-            int index = 0;
-            foreach (Candle sifted in parent.siftedValues)
+            return count;
+        }
+
+        public void sift(List<Candle> values)
+        {
+            SiftValuesStrategy siftStrategie = SiftValuesStrategieFactory.createSiftStrategie(historyParam);
+            List<Candle> sifted = siftStrategie.sift(values);
+
+            candles = sifted.ToArray();
+        }
+
+        public void countHistoryParam()
+        {
+            historyParam = countMeanHistoryDeviation();
+        }
+
+        private double countMeanHistoryDeviation()
+        {
+            double mean = 0;
+
+            for (int i = 1; i < candles.Length; i++)
             {
-                String values = sifted.timeOrder + "|" + sifted.dt.ToString("dd.MM.yyyy HH:mm:ss") + "|" +
-                                Math.Round(sifted.value, 4) + "|" +
-                                Math.Round(sifted.getValue(), 4) + "|" +
-                                sifted.printDescription();
-
-                String history = " |";
-                if (index < arrTrades.Length)
-                    history += arrTrades[index].tradeString();
-
-                collection.Add(values + history);
-                index++;
+                mean += Math.Abs(candles[i].value - candles[i - 1].value) / candles[i].value;
             }
 
-            File.WriteAllLines("portfolioValues_" + parent.ticket + "_" + year + "_s" + topR2 + ".txt", collection);
+            return mean / candles.Length;
         }
 
-        public double getAver()
+        public double getCandleValueFor(int start)
         {
-            return minDepth;
-        }
-
-        public double calculateMaxLoss()
-        {
-            double loss = 0;
-            for (int i = 0; i < trades.Count; i++)
-            {
-                for (int j = i; j < trades.Count; j++)
-                {
-                    double current = (trades[i].moneyValue - trades[j].moneyValue) / trades[i].moneyValue;
-                    if (current > loss)
-                        loss = current;
-                }
-            }
-
-            return Math.Round(loss, 3);
-        }
-
-        public double calculateMaxMoneyValue()
-        {
-            double max = 0;
-            foreach (Trade trade in trades)
-                if (trade.moneyValue > max)
-                    max = trade.moneyValue;
-
-            return calculateRelativeMoneyValueFor(max);
-        }
-
-        public double calculateEndPeriodMoneyValue()
-        {
-            double currentMoneyValue = (trades.Count <= 0) ? moneyValue : trades.Last().moneyValue;
-
-            return calculateRelativeMoneyValueFor(currentMoneyValue);
-        }
-
-        protected double calculateRelativeMoneyValueFor(double value)
-        {
-            double beginMoneyValue = (trades.Count <= 0) ? moneyValue : trades.First().moneyValue;
-
-            return 100 + Math.Round((value - beginMoneyValue) / beginMoneyValue * 100, 2);
+            return candles[start].value;
         }
     }
 }

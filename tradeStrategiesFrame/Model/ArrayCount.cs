@@ -2,9 +2,9 @@
 {
     class ArrayCount
     {
-        public static Candle doubleAver(Portfolio portfolio, int start)
+        public static Candle doubleAver(Machine portfolio, int start)
         {
-            Candle[] values = portfolio.parent.siftedValues;
+            Candle[] values = portfolio.portfolio.candles;
             Candle candle = values[start].clone();
 
             if (start < portfolio.aver)
@@ -21,9 +21,9 @@
             return candle;
         }
 
-        public static Candle directionMovement(Portfolio portfolio, int start)
+        public static Candle directionMovement(Machine portfolio, int start)
         {
-            Candle[] values = portfolio.parent.siftedValues;
+            Candle[] values = portfolio.portfolio.candles;
             Candle candle = values[start].clone();
 
             double path = 0;
@@ -38,7 +38,7 @@
 
                     for (int j = i; j <= start; j++)
                     {
-                        if (current.relativeAbsSpread(values[j]) * 100 >= portfolio.parent.historyParam)
+                        if (current.relativeAbsSpread(values[j]) * 100 >= portfolio.portfolio.historyParam)
                         {
                             path += current.absoluteAbsSpread(values[j]);
                             current = values[j];
@@ -60,9 +60,7 @@
             if (start == 0) return 0;
 
             if (isDayChanged(values, start))
-            {
                 return values[start].value - values[start - 1].value;
-            }
 
             return 0;
         }
@@ -72,7 +70,7 @@
             if (start == 0)
                 return false;
 
-            return (values[start].dt.Day != values[start - 1].dt.Day);
+            return (values[start].date.Day != values[start - 1].date.Day);
         }
     }
 }

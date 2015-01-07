@@ -4,7 +4,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 {
     class FixDeviationDecisionStrategy : DeviationDecisionStrategy
     {
-        public FixDeviationDecisionStrategy(Portfolio pft)
+        public FixDeviationDecisionStrategy(Machine pft)
             : base(pft)
         {
         }

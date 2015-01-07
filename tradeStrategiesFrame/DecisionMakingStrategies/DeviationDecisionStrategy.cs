@@ -9,44 +9,44 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
     {
         public Deviation[] devValues { get; set; }
 
-        protected DeviationDecisionStrategy(Portfolio pft)
+        protected DeviationDecisionStrategy(Machine pft)
             : base(pft)
         {
             clearDeviation();
             Candle.keys = new String[] { "dev" };
         }
 
-        public override String determOperationMode(int start)
+        public override Position.Direction determineTradeDirection(int start)
         {
             if (start < 1)
-                return Stock.none;
+                return Position.Direction.None;
 
             Deviation deviation = findDeviation(start);
 
-            pft.parent.siftedValues[start].addRequisitieByKeyIndex(0, Math.Round(deviation.averageDeviation * 1000, 4).ToString());
+            pft.portfolio.candles[start].addRequisitieByKeyIndex(0, Math.Round(deviation.averageDeviation * 1000, 4).ToString());
 
             return crossOperationFor(deviation);
         }
 
-        protected String crossOperationFor(Deviation deviation)
+        protected Position.Direction crossOperationFor(Deviation deviation)
         {
             if (deviation == null)
-                return Stock.none;
+                return Position.Direction.None;
 
             if (deviation.averageDeviation > 0)
-                return Stock.buy;
+                return Position.Direction.Buy;
 
             if (deviation.averageDeviation < 0)
-                return Stock.sell;
+                return Position.Direction.Sell;
 
-            return Stock.none;
+            return Position.Direction.None;
         }
 
         protected virtual void addDeviation(int start, int depth)
         {
             AveragingConstructor constructor = AveragingConstructorFactory.createConstructor();
 
-            devValues[start].averageValue = constructor.average(pft.parent.siftedValues, start, depth);
+            devValues[start].averageValue = constructor.average(pft.portfolio.candles, start, depth);
 
             devValues[start].deviation = (devValues[start].averageValue - devValues[start - 1].averageValue) / devValues[start].averageValue;
 
@@ -61,7 +61,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 
         public void clearDeviation()
         {
-            devValues = new Deviation[pft.parent.siftedValues.Length];
+            devValues = new Deviation[pft.portfolio.candles.Length];
 
             for (int i = 0; i < devValues.Length; i++)
                 devValues[i] = new Deviation();

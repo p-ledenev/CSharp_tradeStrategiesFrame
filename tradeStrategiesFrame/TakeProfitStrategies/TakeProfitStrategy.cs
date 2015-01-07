@@ -5,11 +5,11 @@ namespace tradeStrategiesFrame.TakeProfitStrategies
 {
     abstract class TakeProfitStrategy
     {
-        public Portfolio pft { get; set; }
+        public Machine machine { get; set; }
 
-        public TakeProfitStrategy(Portfolio pft)
+        public TakeProfitStrategy(Machine machine)
         {
-            this.pft = pft;
+            this.machine = machine;
         }
 
         public abstract bool shouldTakeProfit(int start);

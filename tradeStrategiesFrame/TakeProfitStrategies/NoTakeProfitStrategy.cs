@@ -5,8 +5,8 @@ namespace tradeStrategiesFrame.TakeProfitStrategies
 {
     class NoTakeProfitStrategy : TakeProfitStrategy
     {
-        public NoTakeProfitStrategy(Portfolio pft)
-            : base(pft)
+        public NoTakeProfitStrategy(Machine machine)
+            : base(machine)
         {
         }
 

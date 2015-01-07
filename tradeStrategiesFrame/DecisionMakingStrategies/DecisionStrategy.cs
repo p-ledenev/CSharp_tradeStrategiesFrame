@@ -7,10 +7,10 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 {
     abstract class DecisionStrategy
     {
-        protected Portfolio pft { get; set; }
+        protected Machine pft { get; set; }
         protected TakeProfitStrategy takeProfitStrategie { get; set; }
 
-        protected DecisionStrategy(Portfolio pft)
+        protected DecisionStrategy(Machine pft)
         {
             this.pft = pft;
 
@@ -19,22 +19,22 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 
         public TradeSignal tradeSignalFor(int start)
         {
-            String lastCross = pft.getLastOpenPositionTrade().stock.mode;
-            String cross = determOperationMode(start);
+            Position.Direction lastDirection = pft.getLastOpenPositionTrade().getDirection();
+            Position.Direction direction = determineTradeDirection(start);
 
-            if (!lastCross.Equals(cross))
-                return TradeSignal.openPosition(cross);
+            if (!direction.Equals(lastDirection))
+                return TradeSignal.forCloseAndOpenPosition(direction);
 
             if (takeProfitStrategie.shouldTakeProfit(start))
-                return TradeSignal.closePosition(cross);
+                return TradeSignal.forClosePosition(direction);
 
             if (takeProfitStrategie.shouldReopenPosition(start))
-                return TradeSignal.openPosition(cross);
+                return TradeSignal.forCloseAndOpenPosition(direction);
 
-            return TradeSignal.closePosition(Stock.none);
+            return TradeSignal.forClosePosition(Position.Direction.None);
         }
 
-        public abstract String determOperationMode(int start);
+        public abstract Position.Direction determineTradeDirection(int start);
 
         public abstract void readParamsFrom(String xml);
     }

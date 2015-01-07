@@ -7,24 +7,24 @@ namespace tradeStrategiesFrame.TakeProfitStrategies
     {
         public double k {get; set;}
 
-        public TakeProfitFromMaxStrategy(Portfolio pft, double k)
-            : base(pft)
+        public TakeProfitFromMaxStrategy(Machine machine, double k)
+            : base(machine)
         {
             this.k = k;
         }
 
         public override bool shouldTakeProfit(int start)
         {
-            double value = pft.getRearValue(start);
-            double extremumValue = pft.getLastTrade().stock.buyValue;
+            double value = machine.getCandleValueFor(start);
+            double extremumValue = machine.getLastTrade().position.tradeValue;
 
-            int sgn = (pft.getLastOpenPositionTrade().stock.mode.Equals(Stock.buy)) ? 1 : -1;
+            int sign = (machine.getLastOpenPositionTrade().isBuy()) ? 1 : -1;
 
-            for (int i = pft.getLastTrade().stock.index; i <= start; i++)
-                if (sgn * pft.getRearValue(i) > sgn * extremumValue)
-                    extremumValue = pft.getRearValue(i);
+            for (int i = machine.getLastTrade().dateIndex; i <= start; i++)
+                if (sign * machine.getCandleValueFor(i) > sign * extremumValue)
+                    extremumValue = machine.getCandleValueFor(i);
 
-            return sgn * (extremumValue - value) / extremumValue > k;            
+            return sign * (extremumValue - value) / extremumValue > k;            
         }
 
         public override bool shouldReopenPosition(int start)

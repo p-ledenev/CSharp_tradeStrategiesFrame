@@ -10,14 +10,14 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
         protected bool reverseDirection { get; set; }
         public Approximation[] appValues { get; set; }
 
-        protected ApproximationDecisionStrategy(Portfolio pft)
+        protected ApproximationDecisionStrategy(Machine pft)
             : base(pft)
         {
             reverseDirection = false;
             clearApproximation();
         }
 
-        public override String determOperationMode(int start)
+        public override Position.Direction determineTradeDirection(int start)
         {
             Approximation ap = approximationSearch(start);
             appValues[start] = ap;
@@ -29,16 +29,16 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
         {
             ApproximationConstructor constructor = ApproximationConstructorFactory.createConstructor();
 
-            Approximation ap = constructor.approximate(pft.parent.siftedValues, start, pft.minDepth);
+            Approximation ap = constructor.approximate(pft.portfolio.candles, start, pft.minDepth);
             setCandleRequisities(ap, start);
 
-            int depth = start - pft.getLastTrade().stock.index + getLastTradeDepth();
+            int depth = start - pft.getLastTrade().dateIndex + getLastTradeDepth();
 
             for (int i = pft.minDepth; i < depth;)
             {
                 int j = computeSearchIndex(i, pft.minDepth, depth);
                 
-                Approximation current = constructor.approximate(pft.parent.siftedValues, start, j);
+                Approximation current = constructor.approximate(pft.portfolio.candles, start, j);
                 setCandleRequisities(current, start);
 
                 if (!shouldContinueApproximationSearch(current, start)) 
@@ -70,29 +70,19 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             return end - i - 1 + begin;
         }
 
-        protected String crossOperationFor(Approximation ap)
+        protected Position.Direction crossOperationFor(Approximation ap)
         {
-            if (ap == null || ap.k == null) return Stock.none;
+            if (ap == null || ap.k == null) return Position.Direction.None;
 
-            if (ap.k[0] > 0) return Stock.buy;
-            if (ap.k[0] < 0) return Stock.sell;
+            if (ap.k[0] > 0) return Position.Direction.Buy;
+            if (ap.k[0] < 0) return Position.Direction.Sell;
 
-            return Stock.none;
-        }
-
-        protected double countSigmaFor(Approximation ap, int abscis, int index)
-        {
-            return Math.Abs(ap.countFunctionFor(abscis) - pft.parent.siftedValues[index].nonGapValue);
-        }
-
-        public Approximation getApproximationFor(int start)
-        {
-            return appValues[start];
+            return Position.Direction.None;
         }
 
         public int getLastTradeDepth()
         {
-            return appValues[pft.getLastTrade().stock.index].depth;
+            return appValues[pft.getLastTrade().dateIndex].depth;
         }
 
         protected abstract bool shouldContinueApproximationSearch(Approximation ap, int start);
@@ -103,7 +93,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 
         public void clearApproximation()
         {
-            appValues = new Approximation[pft.parent.siftedValues.Length];
+            appValues = new Approximation[pft.portfolio.candles.Length];
 
             for (int i = 0; i < appValues.Length; i++)
                 appValues[i] = new Approximation();

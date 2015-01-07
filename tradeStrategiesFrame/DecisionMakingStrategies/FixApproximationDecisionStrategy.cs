@@ -5,7 +5,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 {
     class FixApproximationDecisionStrategy : ApproximationDecisionStrategy
     {
-        public FixApproximationDecisionStrategy(Portfolio pft)
+        public FixApproximationDecisionStrategy(Machine pft)
             : base(pft)
         {
             Candle.keys = new String[] { "k", "kx+b", "appN" };
@@ -27,9 +27,9 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 
         protected override void setCandleRequisities(Approximation ap, int start)
         {
-            pft.parent.siftedValues[start].addRequisitieByKeyIndex(0, Math.Round(ap.k[0], 4).ToString());//ap.countResidual(pft.parent.siftedValues, start).ToString());
-            pft.parent.siftedValues[start].addRequisitieByKeyIndex(1, ap.printPowerFunc());
-            pft.parent.siftedValues[start].addRequisitieByKeyIndex(2, ap.countFunctionFor().ToString());
+            pft.portfolio.candles[start].addRequisitieByKeyIndex(0, Math.Round(ap.k[0], 4).ToString());//ap.countResidual(pft.parent.siftedValues, start).ToString());
+            pft.portfolio.candles[start].addRequisitieByKeyIndex(1, ap.printPowerFunc());
+            pft.portfolio.candles[start].addRequisitieByKeyIndex(2, ap.countFunctionFor().ToString());
         }
 
         public override void readParamsFrom(String xml)

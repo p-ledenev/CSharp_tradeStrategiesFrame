@@ -15,20 +15,6 @@ namespace tradeStrategiesFrame.Model
             depth = 0;
         }
 
-        public double countDeviation()
-        {
-            double dev = 0;
-
-            if (k == null) return dev;
-
-            for (int i = 0; i < k.Length - 1; i++)
-            {
-                dev += (k.Length - 1 - i) * k[i] * Math.Pow(depth - 1, k.Length - 2 - i);
-            }
-
-            return dev;
-        }
-
         public double countFunctionFor()
         {
             return countFunctionFor(depth - 1);
@@ -58,23 +44,6 @@ namespace tradeStrategiesFrame.Model
                 str += (k[i] > 0 ? "+" : "") + Math.Round(k[i], 4) + "x" + (k.Length - 1 - i);
 
             return str;
-        }
-
-        public double countResidual(Candle[] values, int start)
-        {
-            if (start - depth < 0)
-                return 0;
-
-            double residual = 0;
-
-            for (int i = 0; i < depth; i++)
-            {
-                double Y = values[start - depth + 1 + i].nonGapValue;
-                double Yapp = countFunctionFor(i);
-                residual += Math.Abs(Y - Yapp) / Y;
-            }
-
-            return Math.Round(residual / depth * 100, 6);
         }
     }
 }

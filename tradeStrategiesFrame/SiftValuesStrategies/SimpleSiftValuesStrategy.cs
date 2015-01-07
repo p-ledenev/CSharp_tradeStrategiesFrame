@@ -19,18 +19,15 @@ namespace tradeStrategiesFrame.SiftValuesStrategies
 
             double lastValue = arrValues[0].value;
 
-            double gap = 0;
             for (int i = 0; i < arrValues.Length - 1; i++)
             {
                 double dGap = ArrayCount.countGap(arrValues, i);
-                gap += dGap;
 
                 Candle value = arrValues[i];
                 if (dGap == 0 && (sifted.Count <= 0 || Math.Abs(lastValue - value.value) / lastValue * 100 >= siftStep))
                 {
-                    value.nonGapValue = value.value - gap;
-                    value.nextValue = arrValues[i + 1].value;
-                    value.timeOrder = sifted.Count() + 1;
+                    value.tradeValue = arrValues[i + 1].value;
+                    value.dateIndex = sifted.Count() + 1;
 
                     sifted.Add(value);
 

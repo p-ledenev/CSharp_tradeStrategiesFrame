@@ -35,7 +35,7 @@ namespace tradeStrategiesFrame
                 // new int[] { 50, 75, 100, 125, 150, 175, 200, 225 };
                 new int[] {50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425};
 
-            GPortfolio gpft = new GPortfolio("dev");
+            Portfolio gpft = new Portfolio("dev");
 
             String ticket;
             foreach (String year in years)

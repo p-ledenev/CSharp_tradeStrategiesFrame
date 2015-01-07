@@ -5,7 +5,7 @@ namespace tradeStrategiesFrame.Factories
 {
     class TakeProfitStrategieFactory
     {
-        public static TakeProfitStrategy createTakeProfitStrategie(Portfolio pft)
+        public static TakeProfitStrategy createTakeProfitStrategie(Machine pft)
         {
             return new NoTakeProfitStrategy(pft);
         }

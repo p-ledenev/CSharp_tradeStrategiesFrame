@@ -1,49 +1,85 @@
 ﻿using System;
+using System.ComponentModel;
+using System.IO;
 
 namespace tradeStrategiesFrame.Model
 {
     class Trade
     {
-        public Stock stock { get; set; }
-        public String position { get; set; }
-        public double moneyValue { get; set; }
+        public Position position { get; set; }
+        public DateTime date { get; set; }
+        public int dateIndex { get; set; }
+        public Boolean isOpenPosition { get; set; }
 
-        public static String openPos = "Open";
-        public static String closePos = "Close";
-
-        public Trade(DateTime dt, int index, double buyValue, double moneyValue, String mode, String position, int volume)
+        public static Trade createEmpty()
         {
-            stock = new Stock(dt, index, buyValue, mode, volume);
+            return new Trade(new DateTime(), 0, 0, Position.Direction.None, 0, false);
+        }
 
-            this.position = position;
-            this.moneyValue = moneyValue;
+        public Trade(DateTime date, int dateIndex, double tradeValue, Position.Direction direction, int volume, Boolean isOpenPosition)
+        {
+            position = new Position(tradeValue, direction, volume);
+
+            this.date = date;
+            this.dateIndex = dateIndex;
+            this.isOpenPosition = isOpenPosition;
         }
 
         public String tradeString()
         {
-            String str = stock.index + "|" + stock.dt.ToString("dd.MM.yyyy HH:mm:ss") + "|";
-            String oprt = (stock.mode == Stock.buy) ? stock.buyValue + "| |" : " |" + stock.buyValue + "|";
+            String result = dateIndex+ "|" + date.ToString("dd.MM.yyyy HH:mm:ss") + "|";
+            String operation = (position.isBuy()) ? position.tradeValue + "| |" : " |" + position.tradeValue + "|";
 
-            str += (position == Trade.openPos) ? oprt + " | |" : " | |" + oprt;
+            result += (isOpenPosition) ? operation + " | |" : " | |" + operation;
 
-            return str + Math.Round(moneyValue / 100000, 2);
+            return result;
         }
 
         public String resumeString()
         {
-            return stock.index + "|" + stock.dt.ToString("dd.MM.yyyy HH:mm:ss") + "|" + Math.Round(moneyValue / 100000, 2);
+            return dateIndex + "|" + date.ToString("dd.MM.yyyy HH:mm:ss") + "|";
+        }
+
+        public Double countSignedValue()
+        {
+            return position.computeSignedValue();
         }
 
         // Trade day: from 19.00 yesterday to 19.00 torday
-        public Boolean inTradeDay(DateTime day)
+        public Boolean inTradeDay(DateTime date)
         {
-            if (day.Hour > 19)
-                return (stock.dt.Day == day.Day && stock.dt.Hour > 19);
+            if (date.Hour > 19)
+                return (this.date.Day == date.Day && this.date.Hour > 19);
 
-            if (stock.dt.Day == day.Day)
+            if (this.date.Day == date.Day)
                 return true;
 
-            return (stock.dt.Day == day.Day - 1 && stock.dt.Hour > 19);
+            return (this.date.Day == date.Day - 1 && this.date.Hour > 19);
+        }
+
+        public Boolean isSameDirectionAs(Position.Direction direction)
+        {
+            return position.isSameDirectionAs(direction);
+        }
+
+        public Boolean isBuy()
+        {
+            return position.isBuy();
+        }
+
+        public Boolean isSell()
+        {
+            return position.isSell();
+        }
+
+        public int getVolume()
+        {
+            return position.volume;
+        }
+
+        public Position.Direction getDirection()
+        {
+            return position.direction;
         }
     }
 }

@@ -4,28 +4,45 @@ namespace tradeStrategiesFrame.Model
 {
     class TradeSignal
     {
-        public String cross { set; get; }
-        public String position { set; get; }
+        public enum Mode { Close, CloseAndOpen };
 
-        public TradeSignal(String cross, String position)
+        public Position.Direction direction { set; get; }
+        public TradeSignal.Mode mode { set; get; }
+
+        public TradeSignal(Position.Direction direction, TradeSignal.Mode mode)
         {
-            this.cross = cross;
-            this.position = position;
+            this.mode = mode;
+            this.direction = direction;
         }
 
-        public static TradeSignal closePosition(String cross)
+        public static TradeSignal forClosePosition(Position.Direction direction)
         {
-            String reCross = Stock.none;
+            Position.Direction reverseDirection = Position.Direction.None;
 
-            if (Stock.buy.Equals(cross)) reCross = Stock.sell;
-            if (Stock.sell.Equals(cross)) reCross = Stock.buy;
+            if (Position.Direction.Buy.Equals(direction)) reverseDirection = Position.Direction.Sell;
+            if (Position.Direction.Sell.Equals(direction)) reverseDirection = Position.Direction.Buy;
 
-            return new TradeSignal(reCross, Trade.closePos);
+            return new TradeSignal(reverseDirection, Mode.Close);
         }
 
-        public static TradeSignal openPosition(String cross)
+        public static TradeSignal forCloseAndOpenPosition(Position.Direction direction)
         {
-            return new TradeSignal(cross, Trade.openPos);
+            return new TradeSignal(direction, Mode.CloseAndOpen);
+        }
+
+        public Boolean isNoneDirection()
+        {
+            return Position.Direction.None.Equals(direction);
+        }
+
+        public Boolean isClosePosition()
+        {
+            return Mode.Close.Equals(mode);
+        }
+
+        public Boolean isCloseAndOpenPosition()
+        {
+            return Mode.CloseAndOpen.Equals(mode);
         }
     }
 }

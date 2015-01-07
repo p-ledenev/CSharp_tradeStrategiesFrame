@@ -8,16 +8,16 @@ namespace tradeStrategiesFrame.Model
     {
         public static String[] keys { get; set; }
 
-        public Dictionary<String, String> requisities { get; set; }
+        public Dictionary<String, String> requisites { get; set; }
 
         public Description()
         {
-            requisities = new Dictionary<String, String>();
+            requisites = new Dictionary<String, String>();
         }
 
         public void addRequisitieByKeyIndex(int index, String value)
         {
-            requisities[keys[index]] = value;
+            requisites[keys[index]] = value;
         }
 
         public String printDescription()
@@ -27,7 +27,7 @@ namespace tradeStrategiesFrame.Model
 
             String response = "";
             foreach (String key in keys)
-                response += (requisities.Keys.Contains(key) ? requisities[key] : " ") + "|";
+                response += (requisites.Keys.Contains(key) ? requisites[key] : " ") + "|";
 
             return response;
         }
