@@ -1,8 +1,8 @@
 ﻿using tradeStrategiesFrame.Model;
 
-namespace tradeStrategiesFrame.AveragingConstructors
+namespace tradeStrategiesFrame.AverageConstructors
 {
-    abstract class AveragingConstructor
+    abstract class AverageConstructor
     {
         public abstract double average(IValue[] values, int start, int depth);
     }

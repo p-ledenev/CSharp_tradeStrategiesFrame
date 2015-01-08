@@ -21,10 +21,9 @@ namespace tradeStrategiesFrame.SiftValuesStrategies
 
             for (int i = 0; i < arrValues.Length - 1; i++)
             {
-                double dGap = ArrayCount.countGap(arrValues, i);
-
                 Candle value = arrValues[i];
-                if (dGap == 0 && (sifted.Count <= 0 || Math.Abs(lastValue - value.value) / lastValue * 100 >= siftStep))
+
+                if (sifted.Count <= 0 || Math.Abs(lastValue - value.value) / lastValue * 100 >= siftStep)
                 {
                     value.tradeValue = arrValues[i + 1].value;
                     value.dateIndex = sifted.Count() + 1;

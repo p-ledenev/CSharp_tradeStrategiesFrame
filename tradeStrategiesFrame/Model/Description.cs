@@ -6,8 +6,6 @@ namespace tradeStrategiesFrame.Model
 {
     class Description
     {
-        public static String[] keys { get; set; }
-
         public Dictionary<String, String> requisites { get; set; }
 
         public Description()
@@ -15,30 +13,24 @@ namespace tradeStrategiesFrame.Model
             requisites = new Dictionary<String, String>();
         }
 
-        public void addRequisitieByKeyIndex(int index, String value)
+        public void addRequisite(String key, String value)
         {
-            requisites[keys[index]] = value;
+            requisites[key] = value;
         }
 
         public String printDescription()
         {
-            if (keys == null)
-                return "";
-
             String response = "";
-            foreach (String key in keys)
-                response += (requisites.Keys.Contains(key) ? requisites[key] : " ") + "|";
+            foreach (String key in requisites.Keys)
+                response += requisites[key]  + "|";
 
             return response;
         }
 
-        public static String printDescriptionHead()
+        public String printDescriptionHead()
         {
-            if (keys == null)
-                return "";
-
             String response = "";
-            foreach (String key in keys)
+            foreach (String key in requisites.Keys)
                 response += key + "|";
 
             return response;

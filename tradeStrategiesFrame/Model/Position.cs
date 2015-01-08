@@ -25,27 +25,27 @@ namespace tradeStrategiesFrame.Model
             this.volume = volume;
         }
 
-        public Boolean isBuy()
+        public bool isBuy()
         {
             return isSameDirectionAs(Direction.Buy);
         }
 
-        public Boolean isSell()
+        public bool isSell()
         {
             return isSameDirectionAs(Direction.Sell);
         }
 
-        public Boolean isNone()
+        public bool isNone()
         {
             return isSameDirectionAs(Direction.None);
         }
 
-        public Boolean isEmpty()
+        public bool isEmpty()
         {
             return isNone();
         }
 
-        public Boolean isSameDirectionAs(Direction direction)
+        public bool isSameDirectionAs(Direction direction)
         {
             return direction.Equals(this.direction);
         }

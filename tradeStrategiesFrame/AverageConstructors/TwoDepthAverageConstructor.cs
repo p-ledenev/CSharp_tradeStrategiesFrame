@@ -1,12 +1,12 @@
 ﻿using tradeStrategiesFrame.Model;
 
-namespace tradeStrategiesFrame.AveragingConstructors
+namespace tradeStrategiesFrame.AverageConstructors
 {
-    internal class TwoDepthAveragingConstructor : AveragingConstructor
+    internal class TwoDepthAverageConstructor : AverageConstructor
     {
-        public AveragingConstructor constructor { get; set; }
+        public AverageConstructor constructor { get; set; }
 
-        public TwoDepthAveragingConstructor(AveragingConstructor constructor)
+        public TwoDepthAverageConstructor(AverageConstructor constructor)
         {
             this.constructor = constructor;
         }

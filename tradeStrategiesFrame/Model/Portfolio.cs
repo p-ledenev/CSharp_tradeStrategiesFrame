@@ -34,8 +34,8 @@ namespace tradeStrategiesFrame.Model
 
             sift(candles);
 
-            int machineAmount = arrAver.Length * arrTopR2.Length;
-            machines = new Machine[machineAmount];
+            int machineNumber = arrAver.Length * arrTopR2.Length;
+            machines = new Machine[machineNumber];
 
             for (int i = 0; i < arrTopR2.Length; i++)
             {
@@ -53,16 +53,16 @@ namespace tradeStrategiesFrame.Model
             {
                 Candle candle = candles[i];
 
-                if (ArrayCount.countGap(candles, i) != 0)
+                if (isDayChanged(i))
                 {
-                    addAverageMoneyValue(candle.date, candle.dateIndex);
+                    addAverageMoney(candle.date, candle.dateIndex);
                     flushResults(year);
                 }
 
                 bool onlyCalculate = (candle.date.Year.ToString() != year);
 
-                foreach (Machine pft in machines)
-                    pft.trade(i, onlyCalculate);
+                foreach (Machine machine in machines)
+                    machine.trade(i, onlyCalculate);
             }
 
             flushResults(year);
@@ -83,9 +83,9 @@ namespace tradeStrategiesFrame.Model
             writePortfoliosResume(year);
         }
 
-        public void addAverageMoneyValue(DateTime dt, int index)
+        public void addAverageMoney(DateTime dt, int index)
         {
-            double averageValue = machines.Sum(machine => machine.countStock());
+            double averageValue = machines.Sum(machine => machine.computeCurrentMoney());
             double value = Math.Round(averageValue / machines.Length / 100000, 2);
 
             Slice slice = new Slice(dt, index, value);
@@ -119,7 +119,7 @@ namespace tradeStrategiesFrame.Model
                 foreach (Machine machine in machines)
                 {
                     if (j < machine.trades.Count)
-                        str += machine.trades.ElementAt(j).resumeString() + "| |";
+                        str += machine.trades.ElementAt(j).printPreview() + "| |";
                     else
                         str += " | | | |";
                 }
@@ -164,7 +164,7 @@ namespace tradeStrategiesFrame.Model
         public void writePortfolioValues(String year)
         {
             foreach (Machine pft in machines)
-                pft.writePortfolioValues(year);
+                pft.writeTradeResult(year);
         }
 
         private int getPortfoliosTradesCount()
@@ -204,7 +204,20 @@ namespace tradeStrategiesFrame.Model
 
         public double getCandleValueFor(int start)
         {
-            return candles[start].value;
+            return getCandleFor(start).getValue();
+        }
+
+        public Candle getCandleFor(int start)
+        {
+            return candles[start];
+        }
+
+        public bool isDayChanged(int start)
+        {
+            if (start == 0)
+                return false;
+
+            return (candles[start].date.Day != candles[start - 1].date.Day);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace tradeStrategiesFrame.Model
         public bool isTrade { get; set; }
         public Position currentPosition { get; set; }
         public List<Trade> trades { get; set; }
+        public List<Slice> averageMoney { get; set; }
         public DecisionStrategy strategy { get; set; }
         public int minDepth { get; set; }
         public int aver { get; set; }
@@ -52,13 +53,13 @@ namespace tradeStrategiesFrame.Model
         public Trade getLastOpenPositionTrade()
         {
             for (int i = trades.Count - 1; i >= 0; i--)
-                if (trades[i].isOpenPosition)
+                if (trades[i].isCloseAndOpenPosition())
                     return trades[i];
 
             return Trade.createEmpty();
         }
 
-        public double countStock()
+        public double computeCurrentMoney()
         {
             if (currentPosition.isNone())
                 return currentMoney;
@@ -79,12 +80,13 @@ namespace tradeStrategiesFrame.Model
             return 2 * volume * portfolio.comission;
         }
 
-        private void closePosition(Candle candle)
+        private void closePosition(Candle candle, Position.Direction direction)
         {
             if (currentPosition.isEmpty())
                 return;
 
             currentMoney += currentPosition.computeSignedValue(candle.tradeValue) - calculateCloseComission(candle, currentPosition.volume);
+
             currentPosition = new Position();
         }
 
@@ -96,13 +98,11 @@ namespace tradeStrategiesFrame.Model
             int volume = (int)Math.Floor(currentMoney / candle.tradeValue);
             currentPosition = new Position(candle.tradeValue, direction, volume);
 
-            currentMoney -= currentPosition.computeSignedValue() - calculateOpenComission(candle, volume);
+            currentMoney -= currentPosition.computeSignedValue() + calculateOpenComission(candle, volume);
         }
 
-        public void operateStock(TradeSignal signal, int start)
+        public void operate(TradeSignal signal, int start)
         {
-            Trade lastTrade = getLastTrade();
-
             if (signal.isNoneDirection())
                 return;
 
@@ -114,16 +114,17 @@ namespace tradeStrategiesFrame.Model
 
             Candle candle = portfolio.candles[start];
 
-            closePosition(candle);
-            trades.Add(new Trade(candle.date, candle.dateIndex, candle.tradeValue, signal.direction, currentPosition.volume, false));
+            int closeVolume = currentPosition.volume;
+            closePosition(candle, signal.direction);
 
             if (signal.isCloseAndOpenPosition())
-            {
                 openPosition(candle, signal.direction);
-                trades.Add(new Trade(candle.date, candle.dateIndex, candle.tradeValue, signal.direction, currentPosition.volume, true));
-            }
 
-            portfolio.addAverageMoneyValue(candle.date, candle.dateIndex);
+            trades.Add(new Trade(candle.date, candle.dateIndex, candle.tradeValue, signal.direction, currentPosition.volume + closeVolume, signal.mode));
+
+            averageMoney.Add(new Slice(candle.date, candle.dateIndex,computeCurrentMoney()));
+
+            portfolio.addAverageMoney(candle.date, candle.dateIndex);
         }
 
         public void trade(int start, bool onlyCalculate)
@@ -131,38 +132,60 @@ namespace tradeStrategiesFrame.Model
             TradeSignal signal = strategy.tradeSignalFor(start);
 
             if (!onlyCalculate)
-                operateStock(signal, start);
+                operate(signal, start);
 
-            if (ArrayCount.isDayChanged(portfolio.candles, start))
+            if (portfolio.isDayChanged(start))
                 Console.WriteLine(portfolio.ticket + ": minDepth: " + minDepth + "; topR2: " + topR2 + "; " +
                     portfolio.candles[start].printDescription() + " " + portfolio.candles[start].date + " " + DateTime.Now);
         }
 
-        public void writePortfolioValues(String year)
+        public void writeTradeResult(String year)
         {
-            List<String> collection = new List<String>();
-            collection.Add("index|date|siftedValue|nonGap|" + Candle.printDescriptionHead() +
-                           " |index|date|openBuy|openSell|closeBuy|closeSell|money");
+            List<String> collection = new List<String>
+            {
+                "dateIndex|date|candleValue|" + portfolio.getCandleFor(0).printDescriptionHead() +
+                " |dateIndex|date|openBuy|openSell|closeBuy|closeSell|" +
+                " |dateIndex|date|averageMoney|"
+            };
 
             Trade[] arrTrades = trades.ToArray();
+            Slice[] arrMoney = averageMoney.ToArray();
 
             int index = 0;
-            foreach (Candle sifted in portfolio.candles)
+            foreach (Candle candle in portfolio.candles)
             {
-                String values = sifted.dateIndex + "|" + sifted.date.ToString("dd.MM.yyyy HH:mm:ss") + "|" +
-                                Math.Round(sifted.value, 4) + "|" +
-                                Math.Round(sifted.getValue(), 4) + "|" +
-                                sifted.printDescription();
+                String values = candle.dateIndex + "|" + candle.date.ToString("dd.MM.yyyy HH:mm:ss") + "|" +
+                                Math.Round(candle.value, 4) + "|" +
+                                candle.printDescription();
 
-                String history = " |";
+                String tradesHistory = " |";
                 if (index < arrTrades.Length)
-                    history += arrTrades[index].tradeString();
+                    tradesHistory += arrTrades[index].print();
 
-                collection.Add(values + history);
+                String moneyHistory = " |";
+                if (index < arrTrades.Length)
+                    moneyHistory += arrMoney[index].print();
+
+                collection.Add(values + tradesHistory + moneyHistory);
                 index++;
             }
 
             File.WriteAllLines("portfolioValues_" + portfolio.ticket + "_" + year + "_s" + topR2 + ".txt", collection);
+        }
+
+        public Candle[] getCandles()
+        {
+            return portfolio.candles;
+        }
+
+        public int getCandlesLength()
+        {
+            return portfolio.candles.Length;
+        }
+
+        public void addCandleRequisite(String key, String value, int start)
+        {
+            portfolio.getCandleFor(start).addRequisite(key, value);
         }
     }
 }

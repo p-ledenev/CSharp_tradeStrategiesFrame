@@ -6,36 +6,38 @@ namespace tradeStrategiesFrame.Model
 {
     class Trade
     {
+        public enum Mode { Close, CloseAndOpen };
+
         public Position position { get; set; }
         public DateTime date { get; set; }
         public int dateIndex { get; set; }
-        public Boolean isOpenPosition { get; set; }
+        public Mode mode { get; set; }
 
         public static Trade createEmpty()
         {
-            return new Trade(new DateTime(), 0, 0, Position.Direction.None, 0, false);
+            return new Trade(new DateTime(), 0, 0, Position.Direction.None, 0, Mode.Close);
         }
 
-        public Trade(DateTime date, int dateIndex, double tradeValue, Position.Direction direction, int volume, Boolean isOpenPosition)
+        public Trade(DateTime date, int dateIndex, double tradeValue, Position.Direction direction, int volume, Mode mode)
         {
             position = new Position(tradeValue, direction, volume);
 
             this.date = date;
             this.dateIndex = dateIndex;
-            this.isOpenPosition = isOpenPosition;
+            this.mode = mode;
         }
 
-        public String tradeString()
+        public String print()
         {
-            String result = dateIndex+ "|" + date.ToString("dd.MM.yyyy HH:mm:ss") + "|";
-            String operation = (position.isBuy()) ? position.tradeValue + "| |" : " |" + position.tradeValue + "|";
+            String result = dateIndex+ "|" + date.ToString("dd.MM.yyyy HH:mm:ss");
+            String operation = (position.isBuy()) ? position.tradeValue + "| " : " |" + position.tradeValue;
 
-            result += (isOpenPosition) ? operation + " | |" : " | |" + operation;
+            result += (isCloseAndOpenPosition()) ? operation + " | " : " | |" + operation;
 
-            return result;
+            return result + "|";
         }
 
-        public String resumeString()
+        public String printPreview()
         {
             return dateIndex + "|" + date.ToString("dd.MM.yyyy HH:mm:ss") + "|";
         }
@@ -80,6 +82,16 @@ namespace tradeStrategiesFrame.Model
         public Position.Direction getDirection()
         {
             return position.direction;
+        }
+
+        public Boolean isClosePosition()
+        {
+            return Mode.Close.Equals(mode);
+        }
+
+        public Boolean isCloseAndOpenPosition()
+        {
+            return Mode.CloseAndOpen.Equals(mode);
         }
     }
 }

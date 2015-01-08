@@ -5,74 +5,43 @@ using tradeStrategiesFrame.Model;
 
 namespace tradeStrategiesFrame.DecisionMakingStrategies
 {
-    internal abstract class ApproximationDecisionStrategy : DecisionStrategy
+    class ApproximationDecisionStrategy : DecisionStrategy
     {
-        protected bool reverseDirection { get; set; }
-        public Approximation[] appValues { get; set; }
+        public Approximation[] approximations { get; set; }
 
-        protected ApproximationDecisionStrategy(Machine pft)
-            : base(pft)
+        public ApproximationDecisionStrategy(Machine machine)
+            : base(machine)
         {
-            reverseDirection = false;
-            clearApproximation();
+            initApproximations();
         }
 
-        public override Position.Direction determineTradeDirection(int start)
-        {
-            Approximation ap = approximationSearch(start);
-            appValues[start] = ap;
-
-            return crossOperationFor(ap);
-        }
-
-        protected Approximation approximationSearch(int start)
+        protected override Position.Direction determineTradeDirection(int start)
         {
             ApproximationConstructor constructor = ApproximationConstructorFactory.createConstructor();
+            Approximation ap = constructor.approximate(machine.getCandles(), start, machine.minDepth);
 
-            Approximation ap = constructor.approximate(pft.portfolio.candles, start, pft.minDepth);
-            setCandleRequisities(ap, start);
+            approximations[start] = ap;
 
-            int depth = start - pft.getLastTrade().dateIndex + getLastTradeDepth();
-
-            for (int i = pft.minDepth; i < depth;)
-            {
-                int j = computeSearchIndex(i, pft.minDepth, depth);
-                
-                Approximation current = constructor.approximate(pft.portfolio.candles, start, j);
-                setCandleRequisities(current, start);
-
-                if (!shouldContinueApproximationSearch(current, start)) 
-                    return combine(ap, current);
-
-                ap = current;
-
-                i += countIncrement(i - pft.minDepth);
-            }
-
-            return ap;
+            return determineTradeDirection(ap);
         }
 
-        protected int countIncrement(int i)
+        protected override void addAncillaryRequisites(int start)
         {
-            if (i < 10) return 1;
-            if (i < 20) return 2;
-            if (i < 30) return 3;
-            if (i < 50) return 5;
+            Approximation ap = approximations[start];
 
-            return 10;
+            machine.addCandleRequisite("k", Math.Round(ap.k[0], 4).ToString(), start);
+            machine.addCandleRequisite("kx+b", ap.printPowerFunc(), start);
+            machine.addCandleRequisite("approximatedValue", ap.countFunctionFor().ToString(), start);
         }
 
-        protected int computeSearchIndex(int i, int begin, int end)
+        public override void readParamsFrom(string xml)
         {
-            if (!reverseDirection)
-                return i;
-
-            return end - i - 1 + begin;
         }
 
-        protected Position.Direction crossOperationFor(Approximation ap)
+        protected Position.Direction determineTradeDirection(Approximation ap)
         {
-            if (ap == null || ap.k == null) return Position.Direction.None;
+            if (ap == null || ap.k == null) 
+                return Position.Direction.None;
 
             if (ap.k[0] > 0) return Position.Direction.Buy;
             if (ap.k[0] < 0) return Position.Direction.Sell;
@@ -80,23 +49,12 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             return Position.Direction.None;
         }
 
-        public int getLastTradeDepth()
+        public void initApproximations()
         {
-            return appValues[pft.getLastTrade().dateIndex].depth;
-        }
+            approximations = new Approximation[machine.portfolio.candles.Length];
 
-        protected abstract bool shouldContinueApproximationSearch(Approximation ap, int start);
-
-        protected abstract Approximation combine(Approximation toReturn, Approximation current);
-
-        protected abstract void setCandleRequisities(Approximation ap, int start);
-
-        public void clearApproximation()
-        {
-            appValues = new Approximation[pft.portfolio.candles.Length];
-
-            for (int i = 0; i < appValues.Length; i++)
-                appValues[i] = new Approximation();
+            for (int i = 0; i < approximations.Length; i++)
+                approximations[i] = new Approximation();
         }
     }
 }

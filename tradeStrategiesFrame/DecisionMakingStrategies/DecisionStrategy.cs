@@ -7,34 +7,38 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 {
     abstract class DecisionStrategy
     {
-        protected Machine pft { get; set; }
-        protected TakeProfitStrategy takeProfitStrategie { get; set; }
+        protected Machine machine { get; set; }
+        protected TakeProfitStrategy takeProfitStrategy { get; set; }
 
-        protected DecisionStrategy(Machine pft)
+        protected DecisionStrategy(Machine machine)
         {
-            this.pft = pft;
+            this.machine = machine;
 
-            takeProfitStrategie = TakeProfitStrategieFactory.createTakeProfitStrategie(pft);
+            takeProfitStrategy = TakeProfitStrategieFactory.createTakeProfitStrategy(machine);
         }
 
         public TradeSignal tradeSignalFor(int start)
         {
-            Position.Direction lastDirection = pft.getLastOpenPositionTrade().getDirection();
             Position.Direction direction = determineTradeDirection(start);
+            addAncillaryRequisites(start);
+
+            Position.Direction lastDirection = machine.getLastOpenPositionTrade().getDirection();
 
             if (!direction.Equals(lastDirection))
                 return TradeSignal.forCloseAndOpenPosition(direction);
 
-            if (takeProfitStrategie.shouldTakeProfit(start))
+            if (takeProfitStrategy.shouldTakeProfit(start))
                 return TradeSignal.forClosePosition(direction);
 
-            if (takeProfitStrategie.shouldReopenPosition(start))
+            if (takeProfitStrategy.shouldReopenPosition(start))
                 return TradeSignal.forCloseAndOpenPosition(direction);
 
             return TradeSignal.forClosePosition(Position.Direction.None);
         }
 
-        public abstract Position.Direction determineTradeDirection(int start);
+        protected abstract Position.Direction determineTradeDirection(int start);
+
+        protected abstract void addAncillaryRequisites(int start);
 
         public abstract void readParamsFrom(String xml);
     }

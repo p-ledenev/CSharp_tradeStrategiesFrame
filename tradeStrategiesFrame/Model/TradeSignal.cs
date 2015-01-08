@@ -4,12 +4,10 @@ namespace tradeStrategiesFrame.Model
 {
     class TradeSignal
     {
-        public enum Mode { Close, CloseAndOpen };
-
         public Position.Direction direction { set; get; }
-        public TradeSignal.Mode mode { set; get; }
+        public Trade.Mode mode { set; get; }
 
-        public TradeSignal(Position.Direction direction, TradeSignal.Mode mode)
+        public TradeSignal(Position.Direction direction, Trade.Mode mode)
         {
             this.mode = mode;
             this.direction = direction;
@@ -22,12 +20,12 @@ namespace tradeStrategiesFrame.Model
             if (Position.Direction.Buy.Equals(direction)) reverseDirection = Position.Direction.Sell;
             if (Position.Direction.Sell.Equals(direction)) reverseDirection = Position.Direction.Buy;
 
-            return new TradeSignal(reverseDirection, Mode.Close);
+            return new TradeSignal(reverseDirection, Trade.Mode.Close);
         }
 
         public static TradeSignal forCloseAndOpenPosition(Position.Direction direction)
         {
-            return new TradeSignal(direction, Mode.CloseAndOpen);
+            return new TradeSignal(direction, Trade.Mode.CloseAndOpen);
         }
 
         public Boolean isNoneDirection()
@@ -37,12 +35,12 @@ namespace tradeStrategiesFrame.Model
 
         public Boolean isClosePosition()
         {
-            return Mode.Close.Equals(mode);
+            return Trade.Mode.Close.Equals(mode);
         }
 
         public Boolean isCloseAndOpenPosition()
         {
-            return Mode.CloseAndOpen.Equals(mode);
+            return Trade.Mode.CloseAndOpen.Equals(mode);
         }
     }
 }

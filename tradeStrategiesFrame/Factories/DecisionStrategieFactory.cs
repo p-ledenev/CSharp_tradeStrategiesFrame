@@ -5,10 +5,20 @@ namespace tradeStrategiesFrame.Factories
 {
     class DecisionStrategieFactory
     {
-        public static DecisionStrategy createDecisionStrategie(Machine pft)
+        public static DecisionStrategy createDecisionStrategie(Machine machine)
         {
-            return new FixDeviationDecisionStrategy(pft);
-            //return new FixApproximationDecisionStrategie(pft);
+            return createDerivativeDecisionStrategy(machine);
+            //return createApproximationDecisionStrategy(machine);
+        }
+
+        protected static DecisionStrategy createDerivativeDecisionStrategy(Machine machine)
+        {
+            return new DerivativeDecisionStrategy(machine);
+        }
+
+        protected static DecisionStrategy createApproximationDecisionStrategy(Machine machine)
+        {
+            return new DerivativeDecisionStrategy(machine);
         }
     }
 }
