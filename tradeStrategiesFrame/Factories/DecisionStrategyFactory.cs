@@ -3,7 +3,7 @@ using tradeStrategiesFrame.Model;
 
 namespace tradeStrategiesFrame.Factories
 {
-    class DecisionStrategieFactory
+    class DecisionStrategyFactory
     {
         public static DecisionStrategy createDecisionStrategie(Machine machine)
         {

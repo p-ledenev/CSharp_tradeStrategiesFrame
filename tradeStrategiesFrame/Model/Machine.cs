@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using tradeStrategiesFrame.CommissionStrategies;
 using tradeStrategiesFrame.DecisionMakingStrategies;
 using tradeStrategiesFrame.Factories;
 
@@ -12,23 +13,18 @@ namespace tradeStrategiesFrame.Model
         public double currentMoney { get; set; }
         public double maxMoney { get; set; }
         public bool isTrade { get; set; }
+        public DecisionStrategy decisionStrategy { get; set; }
         public Position currentPosition { get; set; }
         public List<Trade> trades { get; set; }
         public List<Slice> averageMoney { get; set; }
-        public DecisionStrategy strategy { get; set; }
-        public int minDepth { get; set; }
-        public int aver { get; set; }
-        public double topR2 { get; set; }
+        public int depth { get; set; }
         public Portfolio portfolio { get; set; }
 
-        public Machine(double currentMoney, int aver, int minDepth, double topR2, Portfolio portfolio)
+        public Machine(double currentMoney, int depth, Portfolio portfolio)
         {
             this.currentMoney = currentMoney;
             this.maxMoney = currentMoney;
-            this.aver = aver;
-
-            this.minDepth = minDepth;
-            this.topR2 = topR2;
+            this.depth = depth;
 
             isTrade = true;
             this.portfolio = portfolio;
@@ -36,8 +32,8 @@ namespace tradeStrategiesFrame.Model
             trades = new List<Trade> { Trade.createEmpty() };
             currentPosition = new Position();
 
-            strategy = DecisionStrategieFactory.createDecisionStrategie(this);
-            strategy.readParamsFrom(null);
+            decisionStrategy = DecisionStrategyFactory.createDecisionStrategie(this);
+            decisionStrategy.readParamsFrom(null);
         }
 
         public Trade getLastTrade()
@@ -67,25 +63,15 @@ namespace tradeStrategiesFrame.Model
             return currentMoney + currentPosition.computeSignedValue();
         }
 
-        protected double calculateOpenComission(Candle candle, int volume)
-        {
-            return 2 * volume * portfolio.comission;
-        }
-
-        protected double calculateCloseComission(Candle candle, int volume)
-        {
-            if (getLastTrade().inTradeDay(candle.date))
-                return 0;
-
-            return 2 * volume * portfolio.comission;
-        }
-
         private void closePosition(Candle candle, Position.Direction direction)
         {
             if (currentPosition.isEmpty())
                 return;
 
-            currentMoney += currentPosition.computeSignedValue(candle.tradeValue) - calculateCloseComission(candle, currentPosition.volume);
+            bool intraday = getLastOpenPositionTrade().isIntradayFor(candle.date);
+            double commission = portfolio.computeClosePositionCommission(new CommissionRequest(currentPosition.tradeValue, currentPosition.volume, intraday));
+
+            currentMoney += currentPosition.computeSignedValue(candle.tradeValue) - commission;
 
             currentPosition = new Position();
         }
@@ -98,7 +84,9 @@ namespace tradeStrategiesFrame.Model
             int volume = (int)Math.Floor(currentMoney / candle.tradeValue);
             currentPosition = new Position(candle.tradeValue, direction, volume);
 
-            currentMoney -= currentPosition.computeSignedValue() + calculateOpenComission(candle, volume);
+            double commission = portfolio.computeOpenPositionCommission(new CommissionRequest(candle.tradeValue, volume, false));
+
+            currentMoney -= currentPosition.computeSignedValue() + commission;
         }
 
         public void operate(TradeSignal signal, int start)
@@ -122,20 +110,20 @@ namespace tradeStrategiesFrame.Model
 
             trades.Add(new Trade(candle.date, candle.dateIndex, candle.tradeValue, signal.direction, currentPosition.volume + closeVolume, signal.mode));
 
-            averageMoney.Add(new Slice(candle.date, candle.dateIndex,computeCurrentMoney()));
+            averageMoney.Add(new Slice(candle.date, candle.dateIndex, computeCurrentMoney()));
 
             portfolio.addAverageMoney(candle.date, candle.dateIndex);
         }
 
         public void trade(int start, bool onlyCalculate)
         {
-            TradeSignal signal = strategy.tradeSignalFor(start);
+            TradeSignal signal = decisionStrategy.tradeSignalFor(start);
 
             if (!onlyCalculate)
                 operate(signal, start);
 
             if (portfolio.isDayChanged(start))
-                Console.WriteLine(portfolio.ticket + ": minDepth: " + minDepth + "; topR2: " + topR2 + "; " +
+                Console.WriteLine(portfolio.ticket + ": depth: " + depth + "; " +
                     portfolio.candles[start].printDescription() + " " + portfolio.candles[start].date + " " + DateTime.Now);
         }
 
@@ -170,7 +158,7 @@ namespace tradeStrategiesFrame.Model
                 index++;
             }
 
-            File.WriteAllLines("portfolioValues_" + portfolio.ticket + "_" + year + "_s" + topR2 + ".txt", collection);
+            File.WriteAllLines("tradeResult_" + portfolio.ticket + "_" + year + "_" + portfolio.title + ".txt", collection);
         }
 
         public Candle[] getCandles()
@@ -186,6 +174,60 @@ namespace tradeStrategiesFrame.Model
         public void addCandleRequisite(String key, String value, int start)
         {
             portfolio.getCandleFor(start).addRequisite(key, value);
+        }
+
+        public String getDecisionStrategyName()
+        {
+            return decisionStrategy.getStrategyName();
+        }
+
+        // used via reflection
+        public double getDepth()
+        {
+            return depth;
+        }
+
+        // used via reflection
+        public double computeMaxLoss()
+        {
+            double loss = 0;
+            for (int i = 0; i < averageMoney.Count; i++)
+            {
+                for (int j = i; j < averageMoney.Count; j++)
+                {
+                    double current = (averageMoney[i].value - averageMoney[j].value) / averageMoney[i].value;
+                    if (current > loss)
+                        loss = current;
+                }
+            }
+
+            return Math.Round(loss, 3);
+        }
+
+        // used via reflection
+        public double computeMaxMoney()
+        {
+            double max = 0;
+            foreach (Slice slice in averageMoney)
+                if (slice.value > max)
+                    max = slice.value;
+
+            return computeRelativeMoneyFor(max);
+        }
+
+        // used via reflection
+        public double computeEndPeriodMoney()
+        {
+            double currentMoneyValue = (averageMoney.Count <= 0) ? currentMoney : averageMoney.Last().value;
+
+            return computeRelativeMoneyFor(currentMoneyValue);
+        }
+
+        protected double computeRelativeMoneyFor(double value)
+        {
+            double beginMoneyValue = (averageMoney.Count <= 0) ? currentMoney : averageMoney.First().value;
+
+            return 100 + Math.Round((value - beginMoneyValue) / beginMoneyValue * 100, 2);
         }
     }
 }

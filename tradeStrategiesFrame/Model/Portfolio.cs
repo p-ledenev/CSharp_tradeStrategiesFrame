@@ -3,48 +3,38 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using tradeStrategiesFrame.CommissionStrategies;
+using tradeStrategiesFrame.DecisionMakingStrategies;
 using tradeStrategiesFrame.Factories;
-using tradeStrategiesFrame.SiftValuesStrategies;
+using tradeStrategiesFrame.SiftCanldesStrategies;
 
 namespace tradeStrategiesFrame.Model
 {
     class Portfolio
     {
         public String ticket { get; set; }
-        public double comission { get; set; }
-        public double historyParam { get; set; }
+        public CommissionStrategy commissionStrategy { get; set; }
         public Candle[] candles { get; set; }
-        public Machine[] machines { get; set; }
+        public List<Machine> machines { get; set; }
         public List<Slice> averageMoney { get; set; }
+        public String title { get; set; }
 
-        public String suffix { get; set; }
-
-        public Portfolio(String suffix)
+        public Portfolio(String ticket, CommissionStrategy commissionStrategy, Candle[] candles)
         {
             averageMoney = new List<Slice>();
+            machines = new List<Machine>();
 
-            this.suffix = suffix;
+            this.ticket = ticket;
+            this.commissionStrategy = commissionStrategy;
+            this.candles = candles;
         }
 
-        public void initPortfolios(List<Candle> candles, String ticket, double comission, double historyParam, int[] arrAver, double[] arrTopR2)
+        public void initMachines(int[] depths)
         {
-            this.ticket = ticket;
-            this.comission = comission;
-            this.historyParam = historyParam;
+            foreach (int depth in depths)
+                machines.Add(new Machine(10000000, depth, this));
 
-            sift(candles);
-
-            int machineNumber = arrAver.Length * arrTopR2.Length;
-            machines = new Machine[machineNumber];
-
-            for (int i = 0; i < arrTopR2.Length; i++)
-            {
-                for (int j = 0; j < arrAver.Length; j++)
-                {
-                    Machine pft = new Machine(10000000, 500, arrAver[j], arrTopR2[i], this);
-                    machines[i * arrAver.Length + j] = pft;
-                }
-            }
+            title = machines[0].getDecisionStrategyName();
         }
 
         public void trade(String year)
@@ -70,23 +60,23 @@ namespace tradeStrategiesFrame.Model
 
         protected void flushResults(String year)
         {
-            if (machines.Length > 1)
+            if (machines.Count > 1)
             {
-                writeProtfoliosMoneys(year);
-                writeAverageMoneyValue(year);
+                writeTradeResult(year);
+                writeAverageMoney(year);
             }
             else
             {
-                writePortfolioValues(year);
+                writeTradeDetailResult(year);
             }
 
-            writePortfoliosResume(year);
+            writeTradeSummaryResult(year);
         }
 
         public void addAverageMoney(DateTime dt, int index)
         {
             double averageValue = machines.Sum(machine => machine.computeCurrentMoney());
-            double value = Math.Round(averageValue / machines.Length / 100000, 2);
+            double value = Math.Round(averageValue / machines.Count / 100000, 2);
 
             Slice slice = new Slice(dt, index, value);
 
@@ -94,25 +84,24 @@ namespace tradeStrategiesFrame.Model
                 averageMoney.Add(slice);
         }
 
-        public void writeAverageMoneyValue(String year)
+        public void writeAverageMoney(String year)
         {
             List<String> collection = averageMoney.Select(slice => slice.print()).ToList();
 
-            File.WriteAllLines("averageMoneys_" + ticket + "_" + year + "_" + suffix + ".txt", collection);
+            File.WriteAllLines("averageMoney_" + ticket + "_" + year + "_" + title + ".txt", collection);
         }
 
-        public void writeProtfoliosMoneys(String year)
+        public void writeTradeResult(String year)
         {
             List<String> collection = new List<String>();
 
             String str = "";
-            foreach (Machine pft in machines)
-            {
-                str += "depth_" + pft.minDepth + " topR2_" + pft.topR2 + "|date|money| |";
-            }
+            foreach (Machine machine in machines)
+                str += machine.depth + "|date|money| |";
+
             collection.Add(str);
 
-            int count = getPortfoliosTradesCount();
+            int count = getMaxTradesNumber();
             for (int j = 0; j < count; j++)
             {
                 str = "";
@@ -127,30 +116,30 @@ namespace tradeStrategiesFrame.Model
                 collection.Add(str);
             }
 
-            File.WriteAllLines("pftsMoneys_" + ticket + "_" + year + "_" + suffix + ".txt", collection);
+            File.WriteAllLines("machinesMoney_" + ticket + "_" + year + "_" + title + ".txt", collection);
         }
 
-        public void writePortfoliosResume(String year)
+        public void writeTradeSummaryResult(String year)
         {
             List<String> collection = new List<String>();
 
-            collection.Add(createResumeStringFor(" ", "getAver"));
-            collection.Add(createResumeStringFor("maxLoss", "calculateMaxLoss"));
-            collection.Add(createResumeStringFor("maxMoney", "calculateMaxMoneyValue"));
-            collection.Add(createResumeStringFor("endPeriodMoney", "calculateEndPeriodMoneyValue"));
+            collection.Add(createSummaryStringFor(" ", "getDepth"));
+            collection.Add(createSummaryStringFor("maxLoss", "computeMaxLoss"));
+            collection.Add(createSummaryStringFor("maxMoney", "computeMaxMoney"));
+            collection.Add(createSummaryStringFor("endPeriodMoney", "computeEndPeriodMoney"));
 
-            File.WriteAllLines("pftsResume_" + ticket + "_" + year + "_" + suffix + ".txt", collection);
+            File.WriteAllLines("machinesSummary_" + ticket + "_" + year + "_" + title + ".txt", collection);
         }
 
-        protected String createResumeStringFor(String title, string methodName)
+        protected String createSummaryStringFor(String title, String methodName)
         {
             String str = title + "|";
 
             MethodInfo methodInfo;
-            foreach (Machine pft in machines)
+            foreach (Machine machine in machines)
             {
-                methodInfo = pft.GetType().GetMethod(methodName);
-                str += methodInfo.Invoke(pft, null) + "|";
+                methodInfo = machine.GetType().GetMethod(methodName);
+                str += methodInfo.Invoke(machine, null) + "|";
             }
 
             str += "|";
@@ -161,43 +150,27 @@ namespace tradeStrategiesFrame.Model
             return str;
         }
 
-        public void writePortfolioValues(String year)
+        public void writeTradeDetailResult(String year)
         {
-            foreach (Machine pft in machines)
-                pft.writeTradeResult(year);
+            foreach (Machine machine in machines)
+                machine.writeTradeResult(year);
         }
 
-        private int getPortfoliosTradesCount()
+        private int getMaxTradesNumber()
         {
             int count = 0;
-            foreach (Machine pft in machines)
-                if (pft.trades.Count > count)
-                    count = pft.trades.Count;
+            foreach (Machine machine in machines)
+                if (machine.trades.Count > count)
+                    count = machine.trades.Count;
 
             return count;
         }
 
-        public void sift(List<Candle> values)
-        {
-            SiftValuesStrategy siftStrategie = SiftValuesStrategieFactory.createSiftStrategie(historyParam);
-            List<Candle> sifted = siftStrategie.sift(values);
-
-            candles = sifted.ToArray();
-        }
-
-        public void countHistoryParam()
-        {
-            historyParam = countMeanHistoryDeviation();
-        }
-
-        private double countMeanHistoryDeviation()
+        public double countMeanCandleDeviation()
         {
             double mean = 0;
-
             for (int i = 1; i < candles.Length; i++)
-            {
                 mean += Math.Abs(candles[i].value - candles[i - 1].value) / candles[i].value;
-            }
 
             return mean / candles.Length;
         }
@@ -218,6 +191,16 @@ namespace tradeStrategiesFrame.Model
                 return false;
 
             return (candles[start].date.Day != candles[start - 1].date.Day);
+        }
+
+        public double computeClosePositionCommission(CommissionRequest request)
+        {
+            return commissionStrategy.computeClosePositionCommission(request);
+        }
+
+        public double computeOpenPositionCommission(CommissionRequest request)
+        {
+            return commissionStrategy.computeOpenPositionCommission(request);
         }
     }
 }

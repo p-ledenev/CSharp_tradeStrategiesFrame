@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using tradeStrategiesFrame.Model;
 
-namespace tradeStrategiesFrame.SiftValuesStrategies
+namespace tradeStrategiesFrame.SiftCanldesStrategies
 {
-    class NoSiftValuesStrategy : SiftValuesStrategy
+    class NoSiftStrategy : SiftCandlesStrategy
     {
-        public NoSiftValuesStrategy()
+        public NoSiftStrategy()
             : base(0)
         {
         }

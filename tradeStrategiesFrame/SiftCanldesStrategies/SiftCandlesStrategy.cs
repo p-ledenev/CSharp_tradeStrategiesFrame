@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using tradeStrategiesFrame.Model;
 
-namespace tradeStrategiesFrame.SiftValuesStrategies
+namespace tradeStrategiesFrame.SiftCanldesStrategies
 {
-    abstract class SiftValuesStrategy
+    abstract class SiftCandlesStrategy
     {
         protected double siftStep { get; set; }
 
-        protected SiftValuesStrategy(Double siftStep)
+        protected SiftCandlesStrategy(Double siftStep)
         {
             this.siftStep = siftStep;
         }

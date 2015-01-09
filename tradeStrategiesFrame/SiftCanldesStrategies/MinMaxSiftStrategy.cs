@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using tradeStrategiesFrame.Model;
 
-namespace tradeStrategiesFrame.SiftValuesStrategies
+namespace tradeStrategiesFrame.SiftCanldesStrategies
 {
-    class MinMaxSiftValuesStrategy : SiftValuesStrategy
+    class MinMaxSiftStrategy : SiftCandlesStrategy
     {
-        public MinMaxSiftValuesStrategy(double siftStep)
+        public MinMaxSiftStrategy(double siftStep)
             : base(siftStep)
         {
         }

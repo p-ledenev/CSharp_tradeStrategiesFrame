@@ -14,13 +14,13 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
         {
             this.machine = machine;
 
-            takeProfitStrategy = TakeProfitStrategieFactory.createTakeProfitStrategy(machine);
+            takeProfitStrategy = TakeProfitStrategyFactory.createTakeProfitStrategy(machine);
         }
 
         public TradeSignal tradeSignalFor(int start)
         {
             Position.Direction direction = determineTradeDirection(start);
-            addAncillaryRequisites(start);
+            addAncillaryCandleRequisites(start);
 
             Position.Direction lastDirection = machine.getLastOpenPositionTrade().getDirection();
 
@@ -36,9 +36,11 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             return TradeSignal.forClosePosition(Position.Direction.None);
         }
 
+        public abstract String getStrategyName();
+
         protected abstract Position.Direction determineTradeDirection(int start);
 
-        protected abstract void addAncillaryRequisites(int start);
+        protected abstract void addAncillaryCandleRequisites(int start);
 
         public abstract void readParamsFrom(String xml);
     }

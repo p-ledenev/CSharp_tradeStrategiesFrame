@@ -15,6 +15,11 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             initDerivatives();
         }
 
+        public override string getStrategyName()
+        {
+            return "derivative";
+        }
+
         protected override Position.Direction determineTradeDirection(int start)
         {
             if (start < 1)
@@ -22,15 +27,15 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 
             Derivative derivative = buildDerivative(start);
             
-            return crossOperationFor(derivative);
+            return determineTradeDirection(derivative);
         }
 
-        protected override void addAncillaryRequisites(int start)
+        protected override void addAncillaryCandleRequisites(int start)
         {
             machine.addCandleRequisite("averageDerivative", Math.Round(derivatives[start].averageDerivative * 1000, 4).ToString(), start);
         }
 
-        protected Position.Direction crossOperationFor(Derivative derivative)
+        protected Position.Direction determineTradeDirection(Derivative derivative)
         {
             if (derivative == null)
                 return Position.Direction.None;
@@ -44,7 +49,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             return Position.Direction.None;
         }
 
-        protected virtual void addDerivative(int start, int depth)
+        protected void addDerivative(int start, int depth)
         {
             AverageConstructor constructor = AverageConstructorFactory.createConstructor();
 
@@ -57,7 +62,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
 
         protected Derivative buildDerivative(int start)
         {
-            addDerivative(start, machine.minDepth);
+            addDerivative(start, machine.depth);
 
             return derivatives[start];
         }

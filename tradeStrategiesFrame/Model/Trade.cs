@@ -48,7 +48,7 @@ namespace tradeStrategiesFrame.Model
         }
 
         // Trade day: from 19.00 yesterday to 19.00 torday
-        public Boolean inTradeDay(DateTime date)
+        public Boolean isIntradayFor(DateTime date)
         {
             if (date.Hour > 19)
                 return (this.date.Day == date.Day && this.date.Hour > 19);

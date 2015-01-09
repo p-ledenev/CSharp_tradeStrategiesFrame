@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using tradeStrategiesFrame.Model;
 
-namespace tradeStrategiesFrame.SiftValuesStrategies
+namespace tradeStrategiesFrame.SiftCanldesStrategies
 {
-    class SimpleSiftValuesStrategy : SiftValuesStrategy
+    class SimpleSiftCandlesStrategy : SiftCandlesStrategy
     {
-        public SimpleSiftValuesStrategy(double siftStep)
+        public SimpleSiftCandlesStrategy(double siftStep)
             : base(siftStep)
         {
         }

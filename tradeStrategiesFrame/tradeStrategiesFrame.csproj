@@ -42,15 +42,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApproximationConstructors\ApproximationConstructor.cs" />
+    <Compile Include="CommissionStrategies\ConstantCommissionStrategy.cs" />
+    <Compile Include="CommissionStrategies\CommissionRequest.cs" />
+    <Compile Include="CommissionStrategies\ScalpingCommissionStrategy.cs" />
+    <Compile Include="CommissionStrategies\CommissionStrategy.cs" />
     <Compile Include="DecisionMakingStrategies\ApproximationDecisionStrategy.cs" />
     <Compile Include="AverageConstructors\AverageConstructor.cs" />
     <Compile Include="DecisionMakingStrategies\DecisionStrategy.cs" />
-    <Compile Include="Factories\DecisionStrategieFactory.cs" />
+    <Compile Include="Factories\CommissionStrategyFactory.cs" />
+    <Compile Include="Factories\DecisionStrategyFactory.cs" />
     <Compile Include="DecisionMakingStrategies\DerivativeDecisionStrategy.cs" />
     <Compile Include="Factories\ApproximationConstructorFactory.cs" />
     <Compile Include="Factories\AverageConstructorFactory.cs" />
-    <Compile Include="Factories\SiftValuesStrategieFactory.cs" />
-    <Compile Include="Factories\TakeProfitStrategieFactory.cs" />
+    <Compile Include="Factories\SiftCandlesStrategyFactory.cs" />
+    <Compile Include="Factories\TakeProfitStrategyFactory.cs" />
     <Compile Include="ApproximationConstructors\LinearApproximationConstructor.cs" />
     <Compile Include="MathLab\alglibinternal.cs" />
     <Compile Include="MathLab\alglibmisc.cs" />
@@ -66,7 +71,7 @@
     <Compile Include="MathLab\specialfunctions.cs" />
     <Compile Include="MathLab\statistics.cs" />
     <Compile Include="Model\Slice.cs" />
-    <Compile Include="SiftValuesStrategies\MinMaxSiftValuesStrategy.cs" />
+    <Compile Include="SiftCanldesStrategies\MinMaxSiftStrategy.cs" />
     <Compile Include="Model\Approximation.cs" />
     <Compile Include="Model\Candle.cs" />
     <Compile Include="Model\Description.cs" />
@@ -76,11 +81,11 @@
     <Compile Include="Model\Machine.cs" />
     <Compile Include="Model\Position.cs" />
     <Compile Include="Model\Trade.cs" />
-    <Compile Include="SiftValuesStrategies\NoSiftValuesStrategy.cs" />
+    <Compile Include="SiftCanldesStrategies\NoSiftStrategy.cs" />
     <Compile Include="TakeProfitStrategies\NoTakeProfitStrategy.cs" />
     <Compile Include="AverageConstructors\MovingAverageConstructor.cs" />
-    <Compile Include="SiftValuesStrategies\SiftValuesStrategy.cs" />
-    <Compile Include="SiftValuesStrategies\SimpleSiftValuesStrategy.cs" />
+    <Compile Include="SiftCanldesStrategies\SiftCandlesStrategy.cs" />
+    <Compile Include="SiftCanldesStrategies\SimpleSiftStrategy.cs" />
     <Compile Include="TakeProfitStrategies\TakeProfitFromMaxStrategy.cs" />
     <Compile Include="TakeProfitStrategies\TakeProfitStrategy.cs" />
     <Compile Include="Model\TradeSignal.cs" />

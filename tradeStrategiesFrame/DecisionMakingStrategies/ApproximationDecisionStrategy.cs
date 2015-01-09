@@ -15,17 +15,22 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             initApproximations();
         }
 
+        public override string getStrategyName()
+        {
+            return "approximation";
+        }
+
         protected override Position.Direction determineTradeDirection(int start)
         {
             ApproximationConstructor constructor = ApproximationConstructorFactory.createConstructor();
-            Approximation ap = constructor.approximate(machine.getCandles(), start, machine.minDepth);
+            Approximation ap = constructor.approximate(machine.getCandles(), start, machine.depth);
 
             approximations[start] = ap;
 
             return determineTradeDirection(ap);
         }
 
-        protected override void addAncillaryRequisites(int start)
+        protected override void addAncillaryCandleRequisites(int start)
         {
             Approximation ap = approximations[start];
 
