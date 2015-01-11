@@ -19,54 +19,13 @@ namespace tradeStrategiesFrame.Model
             this.tradeValue = 0;
         }
 
-        public Candle(double value, int volume, DateTime date, int index)
+        public Candle(double value, int volume, DateTime date, int dateIndex)
         {
             this.value = value;
             this.tradeValue = 0;
             this.volume = volume;
             this.date = date;
-            this.dateIndex = index;
-        }
-
-        public Candle(String[] candle, int index)
-        {
-            this.date = DateTime.Parse(candle[0]);
-            this.value = Double.Parse(candle[4].Replace(".", ","));
-            this.tradeValue = 0;
-            this.volume = Int32.Parse(candle[5].Replace(".", ","));
-            this.dateIndex = index;
-        }
-
-        public Candle clone()
-        {
-            Candle candle = new Candle
-            {
-                date = this.date,
-                value = this.value,
-                tradeValue = this.tradeValue,
-                volume = this.volume,
-                dateIndex = this.dateIndex
-            };
-
-            return candle;
-        }
-
-        public double absoluteAbsSpread(Candle candle)
-        {
-            return Math.Abs(this.value - candle.value);
-        }
-
-        public double absoluteSpread(Candle candle)
-        {
-            return (this.value - candle.value);
-        }
-
-        public double relativeAbsSpread(Candle candle)
-        {
-            if (this.value != 0)
-                return Math.Abs(this.value - candle.value) / this.value;
-
-            return 0;
+            this.dateIndex = dateIndex;
         }
 
         public double getValue()

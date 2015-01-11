@@ -46,9 +46,12 @@
     <Compile Include="CommissionStrategies\CommissionRequest.cs" />
     <Compile Include="CommissionStrategies\ScalpingCommissionStrategy.cs" />
     <Compile Include="CommissionStrategies\CommissionStrategy.cs" />
+    <Compile Include="DataSources\CsvDataSource.cs" />
+    <Compile Include="DataSources\DataSource.cs" />
     <Compile Include="DecisionMakingStrategies\ApproximationDecisionStrategy.cs" />
     <Compile Include="AverageConstructors\AverageConstructor.cs" />
     <Compile Include="DecisionMakingStrategies\DecisionStrategy.cs" />
+    <Compile Include="Factories\DataSourceFactory.cs" />
     <Compile Include="Factories\CommissionStrategyFactory.cs" />
     <Compile Include="Factories\DecisionStrategyFactory.cs" />
     <Compile Include="DecisionMakingStrategies\DerivativeDecisionStrategy.cs" />
@@ -71,6 +74,7 @@
     <Compile Include="MathLab\specialfunctions.cs" />
     <Compile Include="MathLab\statistics.cs" />
     <Compile Include="Model\Slice.cs" />
+    <Compile Include="Settings\InitialSettings.cs" />
     <Compile Include="SiftCanldesStrategies\MinMaxSiftStrategy.cs" />
     <Compile Include="Model\Approximation.cs" />
     <Compile Include="Model\Candle.cs" />

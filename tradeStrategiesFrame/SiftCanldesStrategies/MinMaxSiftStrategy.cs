@@ -22,28 +22,29 @@ namespace tradeStrategiesFrame.SiftCanldesStrategies
 
             for (int i = 0; i < arrValues.Length - 1; i++)
             {
-                double dGap = 0; // ArrayCount.countGap(arrValues, i);
-
                 Candle value = arrValues[i];
 
                 if (value.value > maxValue) maxValue = value.value;
                 if (value.value < minValue) minValue = value.value;
 
-                if (dGap == 0 && (sifted.Count <= 0 ||
-                    Math.Abs(maxValue - value.value) / maxValue * 100 >= siftStep ||
-                    Math.Abs(minValue - value.value) / minValue * 100 >= siftStep))
-                {
-                    value.tradeValue = arrValues[i + 1].value;
-                    value.dateIndex = sifted.Count() + 1;
+                if (sifted.Count > 0 && computeVariance(maxValue, value.value) < siftStep && computeVariance(minValue, value.value) < siftStep)
+                    continue;
 
-                    sifted.Add(value);
+                value.tradeValue = arrValues[i + 1].value;
+                value.dateIndex = sifted.Count() + 1;
 
-                    maxValue = value.value;
-                    minValue = value.value;
-                }
+                sifted.Add(value);
+
+                maxValue = value.value;
+                minValue = value.value;
             }
 
             return sifted;
+        }
+
+        protected double computeVariance(double x1, double x2)
+        {
+            return Math.Abs(x1 - x2) / x1 * 100;
         }
     }
 }

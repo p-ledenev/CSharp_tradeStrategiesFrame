@@ -29,10 +29,10 @@ namespace tradeStrategiesFrame.Model
             this.candles = candles;
         }
 
-        public void initMachines(int[] depths)
+        public void initMachines(String decisionStrategyName, int[] depths)
         {
             foreach (int depth in depths)
-                machines.Add(new Machine(10000000, depth, this));
+                machines.Add(new Machine(decisionStrategyName, 10000000, depth, this));
 
             title = machines[0].getDecisionStrategyName();
         }

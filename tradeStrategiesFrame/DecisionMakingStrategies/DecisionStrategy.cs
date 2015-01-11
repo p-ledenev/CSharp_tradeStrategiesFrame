@@ -10,11 +10,12 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
         protected Machine machine { get; set; }
         protected TakeProfitStrategy takeProfitStrategy { get; set; }
 
-        protected DecisionStrategy(Machine machine)
+        public void initWith(Machine machine)
         {
             this.machine = machine;
-
             takeProfitStrategy = TakeProfitStrategyFactory.createTakeProfitStrategy(machine);
+
+            init();
         }
 
         public TradeSignal tradeSignalFor(int start)
@@ -36,12 +37,14 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
             return TradeSignal.forClosePosition(Position.Direction.None);
         }
 
-        public abstract String getStrategyName();
+        public abstract String getName();
 
         protected abstract Position.Direction determineTradeDirection(int start);
 
         protected abstract void addAncillaryCandleRequisites(int start);
 
         public abstract void readParamsFrom(String xml);
+
+        protected abstract void init();
     }
 }

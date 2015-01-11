@@ -9,13 +9,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
     {
         public Approximation[] approximations { get; set; }
 
-        public ApproximationDecisionStrategy(Machine machine)
-            : base(machine)
-        {
-            initApproximations();
-        }
-
-        public override string getStrategyName()
+        public override string getName()
         {
             return "approximation";
         }
@@ -43,23 +37,23 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
         {
         }
 
+        protected override void init()
+        {
+            approximations = new Approximation[machine.portfolio.candles.Length];
+
+            for (int i = 0; i < approximations.Length; i++)
+                approximations[i] = new Approximation();
+        }
+
         protected Position.Direction determineTradeDirection(Approximation ap)
         {
-            if (ap == null || ap.k == null) 
+            if (ap == null || ap.k == null)
                 return Position.Direction.None;
 
             if (ap.k[0] > 0) return Position.Direction.Buy;
             if (ap.k[0] < 0) return Position.Direction.Sell;
 
             return Position.Direction.None;
-        }
-
-        public void initApproximations()
-        {
-            approximations = new Approximation[machine.portfolio.candles.Length];
-
-            for (int i = 0; i < approximations.Length; i++)
-                approximations[i] = new Approximation();
         }
     }
 }

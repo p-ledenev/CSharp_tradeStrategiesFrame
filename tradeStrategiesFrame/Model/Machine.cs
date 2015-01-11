@@ -20,7 +20,7 @@ namespace tradeStrategiesFrame.Model
         public int depth { get; set; }
         public Portfolio portfolio { get; set; }
 
-        public Machine(double currentMoney, int depth, Portfolio portfolio)
+        public Machine(String decisionStrategyName, double currentMoney, int depth, Portfolio portfolio)
         {
             this.currentMoney = currentMoney;
             this.maxMoney = currentMoney;
@@ -32,7 +32,7 @@ namespace tradeStrategiesFrame.Model
             trades = new List<Trade> { Trade.createEmpty() };
             currentPosition = new Position();
 
-            decisionStrategy = DecisionStrategyFactory.createDecisionStrategie(this);
+            decisionStrategy = DecisionStrategyFactory.createDecisionStrategie(decisionStrategyName, this);
             decisionStrategy.readParamsFrom(null);
         }
 
@@ -178,7 +178,7 @@ namespace tradeStrategiesFrame.Model
 
         public String getDecisionStrategyName()
         {
-            return decisionStrategy.getStrategyName();
+            return decisionStrategy.getName();
         }
 
         // used via reflection

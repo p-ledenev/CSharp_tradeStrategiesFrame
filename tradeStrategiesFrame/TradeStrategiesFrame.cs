@@ -2,36 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using tradeStrategiesFrame.CommissionStrategies;
-using tradeStrategiesFrame.DecisionMakingStrategies;
+using tradeStrategiesFrame.DataSources;
 using tradeStrategiesFrame.Factories;
 using tradeStrategiesFrame.Model;
+using tradeStrategiesFrame.Settings;
 using tradeStrategiesFrame.SiftCanldesStrategies;
 
 namespace tradeStrategiesFrame
 {
-    internal class TradeStrategiesFrame
+    class TradeStrategiesFrame
     {
-        public static List<Candle> readValuesFrom(String fName)
-        {
-            List<Candle> values = new List<Candle>();
-            StreamReader reader = new StreamReader(fName);
-
-            String str = "";
-            for (int i = 0; str != null; str = reader.ReadLine())
-            {
-                if (str != "")
-                {
-                    String[] candle = str.Split(new char[] { '|' });
-                    values.Add(new Candle(candle, i++));
-                }
-            }
-
-            reader.Close();
-
-            return values;
-        }
-
-        public static Candle[] sift(List<Candle> candles, double siftStep)
+        public static Candle[] siftCandles(List<Candle> candles, double siftStep)
         {
             SiftCandlesStrategy siftStrategie = SiftCandlesStrategyFactory.createSiftStrategie(siftStep);
             List<Candle> sifted = siftStrategie.sift(candles);
@@ -39,33 +20,46 @@ namespace tradeStrategiesFrame
             return sifted.ToArray();
         }
 
+        public static List<Candle> readCandles(String fileName)
+        {
+            DataSource source = DataSourceFactory.createDataSource();
+
+            return source.readCandlesFrom(fileName);
+        }
+
+        public static List<InitialSettings> readSettings()
+        {
+            List<InitialSettings> settings = new List<InitialSettings>();
+
+            StreamReader reader = new StreamReader("settings.txt");
+
+            String line;
+            while ((line = reader.ReadLine()) != null)
+                settings.Add(InitialSettings.creaateFrom(line));
+
+            return settings;
+        }
+
         public static void Main(string[] args)
         {
-            String[] years = new String[] { "2014" }; // { "2010", "2011", "2012", "2013", "2014" };
-            int[] depths = //new int[] { 50, 75, 100, 125, 150, 175, 200};
-                // new int[] { 50, 75, 100, 125, 150, 175, 200, 225 };
-                new int[] { 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425 };
+            List<InitialSettings> tradeSettings = readSettings();
 
-            foreach (String year in years)
+            foreach (InitialSettings settings in tradeSettings)
             {
-                StreamReader reader = new StreamReader("tickets.txt");
-
-                String strInitData;
-                while ((strInitData = reader.ReadLine()) != null)
+                foreach (String year in settings.years)
                 {
-                    String[] arrInitData = strInitData.Split(new char[1] { ';' });
-                    List<Candle> candles = readValuesFrom("source\\forts\\" + year + "\\" + arrInitData[0] + "_1min_" + year + ".txt");
+                    List<Candle> data = readCandles("sources\\" + year + "\\" + settings.ticket + "_" + settings.timeFrame + ".txt");
+                    Candle[] candles = siftCandles(data, settings.siftStep);
 
-                    CommissionStrategy commissionStrategy = CommissionStrategyFactory.createConstantCommissionStrategie(Double.Parse(arrInitData[1]));
-                    
-                    Portfolio portfolio = new Portfolio(arrInitData[0], commissionStrategy, sift(candles, Double.Parse(arrInitData[2])));
+                    CommissionStrategy commissionStrategy = CommissionStrategyFactory.createConstantCommissionStrategie(settings.commission);
 
-                    portfolio.initMachines(depths);
+                    Portfolio portfolio = new Portfolio(settings.ticket, commissionStrategy, candles);
+
+                    portfolio.initMachines(settings.decisionStrategyName, settings.depths);
 
                     portfolio.trade(year);
                 }
 
-                reader.Close();
             }
         }
     }

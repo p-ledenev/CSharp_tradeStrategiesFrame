@@ -9,13 +9,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
     {
         public Derivative[] derivatives { get; set; }
 
-        public DerivativeDecisionStrategy(Machine machine)
-            : base(machine)
-        {
-            initDerivatives();
-        }
-
-        public override string getStrategyName()
+        public override string getName()
         {
             return "derivative";
         }
@@ -26,7 +20,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
                 return Position.Direction.None;
 
             Derivative derivative = buildDerivative(start);
-            
+
             return determineTradeDirection(derivative);
         }
 
@@ -71,7 +65,7 @@ namespace tradeStrategiesFrame.DecisionMakingStrategies
         {
         }
 
-        public void initDerivatives()
+        protected override void init()
         {
             derivatives = new Derivative[machine.portfolio.candles.Length];
 
