@@ -5,13 +5,13 @@ using tradeStrategiesFrame.Model;
 
 namespace tradeStrategiesFrame.DecisionMakingStrategies
 {
-    class DerivativeDecisionStrategy : DecisionStrategy
+    class AveraginingDecisionStrategy : DecisionStrategy
     {
         public Derivative[] derivatives { get; set; }
 
         public override string getName()
         {
-            return "derivative";
+            return "averagining";
         }
 
         protected override Position.Direction determineTradeDirection(int start)

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using tradeStrategiesFrame.CommissionStrategies;
-using tradeStrategiesFrame.SiftCanldesStrategies;
+﻿using tradeStrategiesFrame.CommissionStrategies;
 
 namespace tradeStrategiesFrame.Factories
 {
     class CommissionStrategyFactory
     {
-        public static CommissionStrategy createConstantCommissionStrategie(double commission)
+        public static CommissionStrategy createConstantCommissionStrategy(double commission)
         {
             return createScaplingCommissionStrategy(commission);
         }

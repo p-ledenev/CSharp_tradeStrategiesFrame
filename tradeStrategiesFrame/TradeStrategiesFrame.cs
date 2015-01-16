@@ -51,7 +51,7 @@ namespace tradeStrategiesFrame
                     List<Candle> data = readCandles("sources\\" + year + "\\" + settings.ticket + "_" + settings.timeFrame + ".txt");
                     Candle[] candles = siftCandles(data, settings.siftStep);
 
-                    CommissionStrategy commissionStrategy = CommissionStrategyFactory.createConstantCommissionStrategie(settings.commission);
+                    CommissionStrategy commissionStrategy = CommissionStrategyFactory.createConstantCommissionStrategy(settings.commission);
 
                     Portfolio portfolio = new Portfolio(settings.ticket, commissionStrategy, candles);
 
