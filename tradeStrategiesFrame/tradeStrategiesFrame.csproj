@@ -54,7 +54,7 @@
     <Compile Include="Factories\DataSourceFactory.cs" />
     <Compile Include="Factories\CommissionStrategyFactory.cs" />
     <Compile Include="Factories\DecisionStrategyFactory.cs" />
-    <Compile Include="DecisionMakingStrategies\DerivativeDecisionStrategy.cs" />
+    <Compile Include="DecisionMakingStrategies\AveraginingDecisionStrategy.cs" />
     <Compile Include="Factories\ApproximationConstructorFactory.cs" />
     <Compile Include="Factories\AverageConstructorFactory.cs" />
     <Compile Include="Factories\SiftCandlesStrategyFactory.cs" />
@@ -76,10 +76,10 @@
     <Compile Include="Model\Slice.cs" />
     <Compile Include="Settings\InitialSettings.cs" />
     <Compile Include="SiftCanldesStrategies\MinMaxSiftStrategy.cs" />
-    <Compile Include="Model\Approximation.cs" />
+    <Compile Include="ApproximationConstructors\Approximation.cs" />
     <Compile Include="Model\Candle.cs" />
     <Compile Include="Model\Description.cs" />
-    <Compile Include="Model\Derivative.cs" />
+    <Compile Include="AverageConstructors\Derivative.cs" />
     <Compile Include="Model\Portfolio.cs" />
     <Compile Include="Model\IValue.cs" />
     <Compile Include="Model\Machine.cs" />
