@@ -116,7 +116,7 @@ namespace tradeStrategiesFrame.Model
                 collection.Add(str);
             }
 
-            File.WriteAllLines("machinesMoney_" + ticket + "_" + year + "_" + title + ".txt", collection);
+            File.WriteAllLines("machinesMoney_" + ticket + "_" + year + "_" + title + ".csv", collection);
         }
 
         public void writeTradeSummaryResult(String year)
@@ -128,7 +128,7 @@ namespace tradeStrategiesFrame.Model
             collection.Add(createSummaryStringFor("maxMoney", "computeMaxMoney"));
             collection.Add(createSummaryStringFor("endPeriodMoney", "computeEndPeriodMoney"));
 
-            File.WriteAllLines("machinesSummary_" + ticket + "_" + year + "_" + title + ".txt", collection);
+            File.WriteAllLines("machinesSummary_" + ticket + "_" + year + "_" + title + ".csv", collection);
         }
 
         protected String createSummaryStringFor(String title, String methodName)

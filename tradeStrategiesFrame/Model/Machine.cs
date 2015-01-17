@@ -158,7 +158,7 @@ namespace tradeStrategiesFrame.Model
                 index++;
             }
 
-            File.WriteAllLines("tradeResult_" + portfolio.ticket + "_" + year + "_" + portfolio.title + ".txt", collection);
+            File.WriteAllLines("tradeResult_" + portfolio.ticket + "_" + year + "_" + portfolio.title + "_" + depth + ".csv", collection);
         }
 
         public Candle[] getCandles()
