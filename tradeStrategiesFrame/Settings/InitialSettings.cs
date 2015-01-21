@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace tradeStrategiesFrame.Settings
 {
@@ -16,9 +13,9 @@ namespace tradeStrategiesFrame.Settings
         public double siftStep { get; set; }
         public String decisionStrategyName { get; set; }
 
-        public static InitialSettings creaateFrom(String line)
+        public static InitialSettings createFrom(String line)
         {
-            String[] data = line.Split(new [] { "~&~" }, StringSplitOptions.None);
+            String[] data = line.Split(new[] { "~&~" }, StringSplitOptions.None);
 
             InitialSettings settings = new InitialSettings()
             {

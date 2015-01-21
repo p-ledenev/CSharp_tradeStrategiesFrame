@@ -29,17 +29,17 @@ namespace tradeStrategiesFrame.Model
 
         public String print()
         {
-            String result = dateIndex+ "|" + date.ToString("dd.MM.yyyy HH:mm:ss");
-            String operation = (position.isBuy()) ? position.tradeValue + "| " : " |" + position.tradeValue;
+            String result = dateIndex+ ";" + date.ToString("dd.MM.yyyy HH:mm:ss") + ";";
+            String operation = (position.isBuy()) ? position.tradeValue + "; " : " ;" + position.tradeValue;
 
-            result += (isCloseAndOpenPosition()) ? operation + " | " : " | |" + operation;
+            result += (isCloseAndOpenPosition()) ? operation + " ; " : " ; ;" + operation;
 
-            return result + "|";
+            return result + ";";
         }
 
         public String printPreview()
         {
-            return dateIndex + "|" + date.ToString("dd.MM.yyyy HH:mm:ss") + "|";
+            return dateIndex + ";" + date.ToString("dd.MM.yyyy HH:mm:ss") + ";";
         }
 
         public Double countSignedValue()

@@ -31,7 +31,7 @@ namespace tradeStrategiesFrame.Factories
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            return assembly.GetTypes().Where(type => "DecisionMakingStrategies".Equals(type.Namespace) && !type.IsAbstract).ToList();
+            return assembly.GetTypes().Where(type => "tradeStrategiesFrame.DecisionMakingStrategies".Equals(type.Namespace) && !type.IsAbstract).ToList();
         }
     }
 }

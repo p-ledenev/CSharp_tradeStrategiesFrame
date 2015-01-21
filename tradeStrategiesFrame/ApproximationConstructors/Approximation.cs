@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace tradeStrategiesFrame.Model
+namespace tradeStrategiesFrame.ApproximationConstructors
 {
     class Approximation
     {

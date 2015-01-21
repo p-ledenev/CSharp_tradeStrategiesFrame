@@ -21,7 +21,7 @@ namespace tradeStrategiesFrame.Model
 
         public String print()
         {
-            return dateIndex + "|" + date.ToString("dd.MM.yyyy HH:mm:ss") + "|" + value;
+            return dateIndex + ";" + date.ToString("dd.MM.yyyy HH:mm:ss") + ";" + value;
         }
 
         public Boolean hasEqualDate(Slice slice)

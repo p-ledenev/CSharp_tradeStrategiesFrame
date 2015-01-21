@@ -1,4 +1,6 @@
-﻿namespace tradeStrategiesFrame.Model
+﻿using tradeStrategiesFrame.Model;
+
+namespace tradeStrategiesFrame.AverageConstructors
 {
     class Derivative : IValue
     {

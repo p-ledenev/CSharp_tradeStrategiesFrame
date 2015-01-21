@@ -35,7 +35,7 @@ namespace tradeStrategiesFrame
 
             String line;
             while ((line = reader.ReadLine()) != null)
-                settings.Add(InitialSettings.creaateFrom(line));
+                settings.Add(InitialSettings.createFrom(line));
 
             return settings;
         }

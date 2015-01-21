@@ -30,6 +30,8 @@ namespace tradeStrategiesFrame.Model
             this.portfolio = portfolio;
 
             trades = new List<Trade> { Trade.createEmpty() };
+            averageMoney = new List<Slice>();
+
             currentPosition = new Position();
 
             decisionStrategy = DecisionStrategyFactory.createDecisionStrategie(decisionStrategyName, this);
@@ -57,10 +59,12 @@ namespace tradeStrategiesFrame.Model
 
         public double computeCurrentMoney()
         {
-            if (currentPosition.isNone())
-                return currentMoney;
+            double value = Math.Round(currentMoney / 100000, 2);
 
-            return currentMoney + currentPosition.computeSignedValue();
+            if (currentPosition.isNone())
+                return value;
+
+            return value + Math.Round(currentPosition.computeSignedValue() / 100000, 2);
         }
 
         private void closePosition(Candle candle, Position.Direction direction)
@@ -131,9 +135,9 @@ namespace tradeStrategiesFrame.Model
         {
             List<String> collection = new List<String>
             {
-                "dateIndex|date|candleValue|" + portfolio.getCandleFor(0).printDescriptionHead() +
-                " |dateIndex|date|openBuy|openSell|closeBuy|closeSell|" +
-                " |dateIndex|date|averageMoney|"
+                "dateIndex;date;candleValue;" + portfolio.getCandleFor(0).printDescriptionHead() +
+                " ;dateIndex;date;openBuy;openSell;closeBuy;closeSell;" +
+                " ;dateIndex;date;averageMoney;"
             };
 
             Trade[] arrTrades = trades.ToArray();
@@ -142,16 +146,18 @@ namespace tradeStrategiesFrame.Model
             int index = 0;
             foreach (Candle candle in portfolio.candles)
             {
-                String values = candle.dateIndex + "|" + candle.date.ToString("dd.MM.yyyy HH:mm:ss") + "|" +
-                                Math.Round(candle.value, 4) + "|" +
+                String values = candle.dateIndex + ";" + candle.date.ToString("dd.MM.yyyy HH:mm:ss") + ";" +
+                                Math.Round(candle.value, 2) + ";" +
                                 candle.printDescription();
 
-                String tradesHistory = " |";
-                if (index < arrTrades.Length)
+                String tradesHistory = " ;";
+                if (index < arrTrades.Length && index != 0)
                     tradesHistory += arrTrades[index].print();
+                else
+                    tradesHistory += ";;;;;";
 
-                String moneyHistory = " |";
-                if (index < arrTrades.Length)
+                String moneyHistory = ";;";
+                if (index < arrMoney.Length)
                     moneyHistory += arrMoney[index].print();
 
                 collection.Add(values + tradesHistory + moneyHistory);

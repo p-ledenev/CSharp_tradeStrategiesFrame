@@ -22,7 +22,7 @@ namespace tradeStrategiesFrame.Model
         {
             String response = "";
             foreach (String key in requisites.Keys)
-                response += requisites[key]  + "|";
+                response += requisites[key]  + ";";
 
             return response;
         }
@@ -31,7 +31,7 @@ namespace tradeStrategiesFrame.Model
         {
             String response = "";
             foreach (String key in requisites.Keys)
-                response += key + "|";
+                response += key + ";";
 
             return response;
         }

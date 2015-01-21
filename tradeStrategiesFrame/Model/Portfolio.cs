@@ -75,10 +75,9 @@ namespace tradeStrategiesFrame.Model
 
         public void addAverageMoney(DateTime dt, int index)
         {
-            double averageValue = machines.Sum(machine => machine.computeCurrentMoney());
-            double value = Math.Round(averageValue / machines.Count / 100000, 2);
+            double averageValue = machines.Sum(machine => Math.Round(machine.computeCurrentMoney() / machines.Count, 2));
 
-            Slice slice = new Slice(dt, index, value);
+            Slice slice = new Slice(dt, index, averageValue);
 
             if (averageMoney.Count <= 0 || !slice.hasEqualDate(averageMoney.Last()))
                 averageMoney.Add(slice);
@@ -88,7 +87,7 @@ namespace tradeStrategiesFrame.Model
         {
             List<String> collection = averageMoney.Select(slice => slice.print()).ToList();
 
-            File.WriteAllLines("averageMoney_" + ticket + "_" + year + "_" + title + ".txt", collection);
+            File.WriteAllLines("averageMoney_" + ticket + "_" + year + "_" + title + ".csv", collection);
         }
 
         public void writeTradeResult(String year)
@@ -97,7 +96,7 @@ namespace tradeStrategiesFrame.Model
 
             String str = "";
             foreach (Machine machine in machines)
-                str += machine.depth + "|date|money| |";
+                str += machine.depth + ";date;money; ;";
 
             collection.Add(str);
 
@@ -107,10 +106,10 @@ namespace tradeStrategiesFrame.Model
                 str = "";
                 foreach (Machine machine in machines)
                 {
-                    if (j < machine.trades.Count)
-                        str += machine.trades.ElementAt(j).printPreview() + "| |";
+                    if (j < machine.averageMoney.Count)
+                        str += machine.averageMoney.ElementAt(j).print() + "; ;";
                     else
-                        str += " | | | |";
+                        str += " ; ; ; ;";
                 }
 
                 collection.Add(str);
@@ -121,31 +120,32 @@ namespace tradeStrategiesFrame.Model
 
         public void writeTradeSummaryResult(String year)
         {
-            List<String> collection = new List<String>();
-
-            collection.Add(createSummaryStringFor(" ", "getDepth"));
-            collection.Add(createSummaryStringFor("maxLoss", "computeMaxLoss"));
-            collection.Add(createSummaryStringFor("maxMoney", "computeMaxMoney"));
-            collection.Add(createSummaryStringFor("endPeriodMoney", "computeEndPeriodMoney"));
+            List<String> collection = new List<String>
+            {
+                createSummaryStringFor(" ", "getDepth"),
+                createSummaryStringFor("maxLoss", "computeMaxLoss"),
+                createSummaryStringFor("maxMoney", "computeMaxMoney"),
+                createSummaryStringFor("endPeriodMoney", "computeEndPeriodMoney")
+            };
 
             File.WriteAllLines("machinesSummary_" + ticket + "_" + year + "_" + title + ".csv", collection);
         }
 
         protected String createSummaryStringFor(String title, String methodName)
         {
-            String str = title + "|";
+            String str = title + ";";
 
             MethodInfo methodInfo;
             foreach (Machine machine in machines)
             {
                 methodInfo = machine.GetType().GetMethod(methodName);
-                str += methodInfo.Invoke(machine, null) + "|";
+                str += methodInfo.Invoke(machine, null) + ";";
             }
 
-            str += "|";
+            str += ";";
 
             methodInfo = GetType().GetMethod(methodName);
-            str += methodInfo.Invoke(this, null) + "|";
+            str += methodInfo.Invoke(this, null) + ";";
 
             return str;
         }
@@ -201,6 +201,48 @@ namespace tradeStrategiesFrame.Model
         public double computeOpenPositionCommission(CommissionRequest request)
         {
             return commissionStrategy.computeOpenPositionCommission(request);
+        }
+
+        // used via reflection
+        public String getDepth()
+        {
+            return "aver";
+        }
+
+        // used via reflection
+        public double computeMaxLoss()
+        {
+            double loss = 0;
+            for (int i = 0; i < averageMoney.Count; i++)
+            {
+                for (int j = i; j < averageMoney.Count; j++)
+                {
+                    double current = (averageMoney[i].value - averageMoney[j].value) / averageMoney[i].value;
+                    if (current > loss)
+                        loss = current;
+                }
+            }
+
+            return Math.Round(loss, 3);
+        }
+
+        // used via reflection
+        public double computeMaxMoney()
+        {
+            double max = 0;
+            foreach (Slice slice in averageMoney)
+            {
+                if (slice.value > max)
+                    max = slice.value;
+            }
+
+            return max;
+        }
+
+        // used via reflection
+        public double computeEndPeriodMoney()
+        {
+            return averageMoney.Last().value;
         }
     }
 }
